@@ -199,10 +199,15 @@ void parseFen(const char* fen, Pos* board) {
     }
     fen += 2;
 
+    char *ptr = strtok(strdup(fen), " ");
+
     // Half moves
+    board->fiftyMoveRule = atoi(ptr);
+
+    ptr = strtok(NULL, " ");
 
     // Full moves
-
+    board->plyLength = atoi(ptr);
 }
 
 
