@@ -8,6 +8,7 @@
 #include "types.h"
 #include "uci.h"
 
+#include <math.h>
 #include <pthread.h>
 #include <string.h>
 
@@ -37,7 +38,7 @@ int reductionTable[64][64];
 void initSearch() {
     for (int i = 0; i < 64; i++)
         for (int j = 0; j < 64; j++) {
-            reductionTable[i][j] = 1;
+            reductionTable[i][j] = (int)((1 + log(i)*log(j))/4);
         }
 }
 
@@ -155,6 +156,11 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         movecnt++;
 
         // Reductions
+        if (!PVNode &&
+            depth > 3 &&
+            movecnt > 2) {
+            depth -= reductionTable[depth][movecnt];
+        }
 
         if (searchPV)
             score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
