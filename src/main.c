@@ -5,6 +5,7 @@
 #include "evaluate.h"
 #include "movegen.h"
 #include "position.h"
+#include "search.h"
 #include "types.h"
 #include "uci.h"
 

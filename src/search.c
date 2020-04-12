@@ -6,6 +6,7 @@
 #include "time.h"
 #include "tt.h"
 #include "types.h"
+#include "uci.h"
 
 #include <pthread.h>
 #include <string.h>

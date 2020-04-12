@@ -115,7 +115,7 @@ void printBoard(Pos board) {
 
 
 Bitboard sliderBlockers(Pos board, int square) {
-        Bitboard result;
+        Bitboard result = 0ull;
 
         Bitboard sliders = ((bPseudoAttacks[square] & (board.pieces[BISHOP] | board.pieces[QUEEN])) |
                                     (rPseudoAttacks[square] & (board.pieces[ROOK] | board.pieces[QUEEN]))) & board.sides[!board.turn];

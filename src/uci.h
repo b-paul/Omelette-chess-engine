@@ -10,3 +10,4 @@ struct goArgs {
 
 void parseFen(const char *fen, Pos* board);
 void uciLoop();
+void reportSearchInfo(Thread *threads);
