@@ -431,7 +431,6 @@ void bench(int argc, char **argv) {
     Pos board;
     resetBoard(&board);
     parseFen(startingFen, &board);
-    printBoard(board);
 
     tTable tt;
     Thread *threads;
