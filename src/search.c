@@ -203,7 +203,6 @@ void *startSearch(void *args) {
     int score;
     int masterThread = thread->index == 0;
     for (thread->depth = 0; thread->depth < thread->maxDepth; thread->depth++) {
-        printf("%d\n", thread->depth);
         if (STOP_SEARCH) break;
         if (setjmp(thread->jumpEnv)) break;
         PrincipalVariation pv;
