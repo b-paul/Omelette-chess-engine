@@ -203,6 +203,7 @@ void *startSearch(void *args) {
     int score;
     int masterThread = thread->index == 0;
     for (thread->depth = 0; thread->depth < thread->maxDepth; thread->depth++) {
+        printf("%d\n", thread->depth);
         if (STOP_SEARCH) break;
         if (setjmp(thread->jumpEnv)) break;
         PrincipalVariation pv;
@@ -240,6 +241,8 @@ Move getBestMove(Pos board, Thread *threads) {
     for (int i = 1; i < threads->threadCount; i++) {
         pthread_join(searchThreads[i], NULL);
     }
+
+    STOP_SEARCH = 0;
 
     return threads[0].pv.pv[0];
 }

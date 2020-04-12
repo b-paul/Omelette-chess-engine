@@ -405,8 +405,6 @@ void *go(void *args) {
     
     Move bestMove = getBestMove(board, threads);
 
-    STOP_SEARCH = 0;
-
     char moveStr[6];
     moveToStr(bestMove, board, moveStr);
     printf("bestmove %s\n", moveStr);
@@ -426,6 +424,12 @@ void setOption(char *str, Thread **threads, tTable *tt) {
 
 // Bench used for benchmark results from
 // OpenBench
+
+static const char *BenchFENs[] = {
+    #include "bench.csv"
+    ""
+};
+
 void bench(int argc, char **argv) {
 
     Pos board;
@@ -437,7 +441,7 @@ void bench(int argc, char **argv) {
 
     Key nodes = 0ull;
 
-    int depth = argc > 2 ? atoi(argv[2]) : 8;
+    int depth = argc > 2 ? atoi(argv[2]) : 6;
     int threadCount = argc > 3 ? atoi(argv[3]) : 1;
     int ttSize = argc > 4 ? atoi(argv[4]) : 16;
 
@@ -452,13 +456,21 @@ void bench(int argc, char **argv) {
     info.maxDepth = depth;
     info.infinite = 0;
 
-    initThreadSearch(threads, board, info);
+    for (int i = 0; strcmp(BenchFENs[i], ""); i++) {
+        resetBoard(&board);
+        parseFen(BenchFENs[i], &board);
 
-    getBestMove(board, threads);
-    for (int i = 0; i < threads->threadCount; i++) {
-        nodes += threads[i].nodes;
+        initThreadSearch(threads, board, info);
+        printf("Position %d: %s\n", i+1, BenchFENs[i]);
+
+        getBestMove(board, threads);
+
+        for (int i = 0; i < threads->threadCount; i++) {
+            nodes += threads[i].nodes;
+        }
+
+        clearTT(&tt);
     }
-    clearTT(&tt);
 
     int endTime = getTime();
 
