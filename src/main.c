@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "attacks.h"
 #include "bitboards.h"
@@ -9,7 +10,7 @@
 #include "types.h"
 #include "uci.h"
 
-int main() {
+int main(int argc, char **argv) {
 
     // Initialize program
 
@@ -19,6 +20,13 @@ int main() {
     initPosition();
     initSearch();
     initZobrist();
+
+    // Check for a bench used in
+    // OpenBench
+    if (argc > 1 && strstr(argv[1], "bench") == argv[1]) {
+        bench(argc, argv);
+        return 0;
+    }
 
     // Run the UCI loop
     // Allows the engine to interact with a gui

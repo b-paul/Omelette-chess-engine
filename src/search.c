@@ -11,8 +11,6 @@
 #include <pthread.h>
 #include <string.h>
 
-#define MAX_DEPTH 2048
-
 volatile int STOP_SEARCH = 0;
 
 Bitboard perft(Pos board, int depth, int isRoot) {
@@ -204,7 +202,7 @@ void *startSearch(void *args) {
     Pos board = thread->board;
     int score;
     int masterThread = thread->index == 0;
-    for (thread->depth = 0; thread->depth < MAX_DEPTH; thread->depth++) {
+    for (thread->depth = 0; thread->depth < thread->maxDepth; thread->depth++) {
         if (STOP_SEARCH) break;
         if (setjmp(thread->jumpEnv)) break;
         PrincipalVariation pv;

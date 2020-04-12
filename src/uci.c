@@ -13,6 +13,8 @@
 #include <string.h>
 #include <pthread.h>
 
+#define MAX_DEPTH 2048
+
 const char* startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 extern volatile int STOP_SEARCH;
@@ -349,6 +351,7 @@ void *go(void *args) {
     int binc = -1;
     int movestogo = 40;
     int movetime = -1;
+    int maxDepth = MAX_DEPTH;
 
     Search info;
 
@@ -389,6 +392,7 @@ void *go(void *args) {
 
     info.stopped = 0;
     info.nodes = 0;
+    info.maxDepth = maxDepth;
     info.startTime = getTime();
     info.time = (movetime != -1 ? movetime : (board.turn ? (btime/movestogo + binc) : (wtime/movestogo + winc))); // change this later
 
@@ -413,6 +417,52 @@ void setOption(char *str, Thread **threads, tTable *tt) {
     } else if (strstr(str, "setoption name Hash value") == str) {
         initTT(tt, atoi(str + 25));
     }
+}
+
+// Bench used for benchmark results from
+// OpenBench
+void bench(int argc, char **argv) {
+
+    Pos board;
+    resetBoard(&board);
+    parseFen(startingFen, &board);
+    printBoard(board);
+
+    tTable tt;
+    Thread *threads;
+
+    Key nodes = 0ull;
+
+    int depth = argc > 2 ? atoi(argv[2]) : 8;
+    int threadCount = argc > 3 ? atoi(argv[3]) : 1;
+    int ttSize = argc > 4 ? atoi(argv[4]) : 16;
+
+    initTT(&tt, ttSize);
+    threads = initThreads(threadCount, &tt);
+
+    int startTime = getTime();
+
+    Search info;
+    info.startTime = startTime;
+    info.time = 999999999;
+    info.maxDepth = depth;
+    info.infinite = 0;
+
+    initThreadSearch(threads, board, info);
+
+    getBestMove(board, threads);
+    for (int i = 0; i < threads->threadCount; i++) {
+        nodes += threads[i].nodes;
+    }
+    clearTT(&tt);
+
+    int endTime = getTime();
+
+    printf("Time  : %dms\n", endTime - startTime);
+    printf("Nodes : %llu\n", nodes);
+    printf("NPS   : %d\n", (int)(nodes*1000 / (endTime - startTime)));
+
+    free(threads);
 }
 
 void uciLoop() {

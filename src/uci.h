@@ -9,5 +9,6 @@ struct goArgs {
 };
 
 void parseFen(const char *fen, Pos* board);
+void bench(int argc, char **argv);
 void uciLoop();
 void reportSearchInfo(Thread *threads);

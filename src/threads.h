@@ -15,6 +15,7 @@ struct Thread {
     int nodes;
     int startTime;
     int maxTime;
+    int maxDepth;
     int score;
     int infinite;
 

@@ -22,6 +22,7 @@ enum entryTypes {
     UPPER, LOWER
 };
 
+void clearTT(tTable *tt);
 void initTT(tTable *tt, int size);
 void addEntry(ttEntry *entry, Key key, Move move, int depth, int eval, int type);
 ttEntry *probeTT(tTable *tt, Key key, int *isReplaced);

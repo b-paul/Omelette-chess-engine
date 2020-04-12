@@ -27,6 +27,7 @@ void initThreadSearch(Thread *threads, Pos board, Search info) {
 
         threads[i].startTime = info.startTime;
         threads[i].maxTime = info.time;
+        threads[i].maxDepth = info.maxDepth;
         
         threads[i].infinite = info.infinite;
     }
