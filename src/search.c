@@ -123,6 +123,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     // PVS sets alpha to beta-1 on
     // non-PV nodes
     int PVNode = alpha != beta-1;
+    int inCheck = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
 
     MovePicker mp;
 
@@ -158,6 +159,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         // Reductions
         if (!PVNode &&
             !moveIsTactical(move, board) &&
+            !inCheck &&
             depth > 2 &&
             movecnt > 1) {
             depth -= reductionTable[depth][movecnt];
@@ -195,7 +197,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
     // Check for checkmate/stalemate
     if (!movecnt) {
-        bestScore = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[!board.turn]), board.turn) ? -999999+height : 0;
+        bestScore = inCheck ? -999999+height : 0;
     }
 
     addEntry(hashEntry, board.hash, bestMove, depth, bestScore, EXACT);

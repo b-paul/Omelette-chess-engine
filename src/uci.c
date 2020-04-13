@@ -629,7 +629,8 @@ void reportSearchInfo(Thread *threads) {
     if (abs(threads[0].score) < 997951) {
         printf("cp %d", threads[0].score);
     } else {
-        printf("mate %d", (999999-abs(threads[0].score))/2);
+        int absVal = (999999-abs(threads[0].score))/2 + 1;
+        printf("mate %d", threads[0].score > 0 ? absVal : -absVal);
     }
 
     printf("\n");
