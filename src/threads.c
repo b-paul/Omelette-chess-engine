@@ -23,6 +23,7 @@ Thread *initThreads(int threadCount, tTable *tt) {
 void initThreadSearch(Thread *threads, Pos board, Search info) {
     for (int i = 0; i < threads[0].threadCount; i++) {
         threads[i].nodes = 0;
+        threads[i].seldepth = 0;
         threads[i].board = board;
 
         threads[i].startTime = info.startTime;
