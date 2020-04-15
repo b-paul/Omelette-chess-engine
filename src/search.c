@@ -126,6 +126,8 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
     int RootNode = height == 0;
 
+    int R = 0;
+
     int inCheck = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
 
     MovePicker mp;
@@ -148,6 +150,25 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         return ttEval;
     }
 
+    int eval = evaluate(board);
+
+    // Null move reductions
+    
+    if (!PVNode &&
+        !inCheck &&
+        eval >= beta &&
+        hasNonPawnMaterial(board)) {
+
+        R = depth > 6? 4 : 3;
+        makeNullMove(&board);
+        score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
+        undoNullMove(&board);
+        if (score > beta) {
+            depth -= 4;
+            if (depth <= 0)
+                return qsearch(board, alpha, beta, height, thread, pv);
+        }
+    }
 
     ttMove.value = NO_MOVE;
 
@@ -170,15 +191,15 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
             !inCheck &&
             depth > 2 &&
             movecnt > 1) {
-            depth -= reductionTable[depth][movecnt];
+            R += reductionTable[depth][movecnt];
         }
 
         if (searchPV)
-            score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
+            score = -alphaBeta(board, -beta, -alpha, depth-R-1, height+1, thread, &lastPv);
         else {
-            score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
+            score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
             if (score > alpha)
-                score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
+                score = -alphaBeta(board, -beta, -alpha, depth-R-1, height+1, thread, &lastPv);
         }
 
         undoMove(&board, move);

@@ -362,3 +362,32 @@ void undoMove(Pos* board, Move move) {
         board->pieceList[to] = NONE;
     }
 }
+
+void makeNullMove(Pos *board) {
+
+    board->lastEnPas = board->enPas;
+    board->lastHash = board->hash;
+    board->lastFiftyRule = board->fiftyMoveRule;
+
+    board->fiftyMoveRule++;
+    board->history[board->plyLength++] = board->hash;
+
+    board->turn = !board->turn;
+    board->hash ^= zobristTurn;
+
+    if (board->enPas != NO_SQ) {
+        board->hash ^= zobristEnPas[file(board->enPas)];
+        board->enPas = NO_SQ;
+    }
+
+}
+
+void undoNullMove(Pos *board) {
+    board->enPas = board->lastEnPas;
+    board->hash = board->lastHash;
+    board->fiftyMoveRule = board->lastFiftyRule;
+
+    board->plyLength--;
+
+    board->turn = !board->turn;
+}

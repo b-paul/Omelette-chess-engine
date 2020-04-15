@@ -14,6 +14,8 @@ Bitboard sliderBlockers(Pos board, int square);
 int isDrawn(Pos board, int height);
 int makeMove(Pos* board, Move move);
 void undoMove(Pos* board, Move move);
+void makeNullMove(Pos *board);
+void undoNullMove(Pos *board);
 
 Bitboard castlePath[CASTLE_CNT];
 int castleBitMasks[SQ_CNT];
@@ -77,6 +79,13 @@ static inline Bitboard squareAttackers(Pos board, int sq, int side) {
     Bitboard kingAttackers = getKingAttacks(sq) & theirKing;
 
     return pawnAttackers | knightAttackers | diagAttackers | horizontalAttackers | kingAttackers;
+}
+
+static inline int hasNonPawnMaterial(Pos board) {
+    return (board.pieces[KNIGHT] ||
+            board.pieces[BISHOP] ||
+            board.pieces[ROOK] ||
+            board.pieces[QUEEN]) ? 1 : 0;
 }
 
 static inline int moveFrom(Move move) {
