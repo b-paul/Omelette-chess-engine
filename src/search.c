@@ -218,14 +218,43 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 void *startSearch(void *args) {
     Thread *thread = (Thread*)args;
     Pos board = thread->board;
-    int score;
+    int score, 
+        alpha = -999999, beta = 999999, delta;
     int masterThread = thread->index == 0;
     for (thread->depth = 0; thread->depth < thread->maxDepth; thread->depth++) {
         if (STOP_SEARCH) break;
         if (setjmp(thread->jumpEnv)) break;
         PrincipalVariation pv;
-        score = alphaBeta(board, -999999, 999999, thread->depth, 0, thread, &pv);
 
+        delta = 24;
+
+        // We expect that our score will be
+        // close to the score we got in the
+        // last iteration
+
+        if (thread->depth >= 5) {
+
+            alpha = max(-999999, thread->score-delta);
+            beta = min(999999, thread->score+delta);
+
+        }
+
+        while (1) {
+
+            score = alphaBeta(board, alpha, beta, thread->depth, 0, thread, &pv);
+
+            if (score <= alpha) {
+                beta = (alpha+beta)/2;
+                alpha = max(score - delta, -999999);
+            } else if (score >= beta) {
+                beta = min(score + delta, 999999);
+            } else
+                break;
+
+            delta += delta/4;
+
+        }
+        
         thread->score = score;
         thread->pv = pv;
 
