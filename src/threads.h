@@ -1,5 +1,6 @@
 #pragma once
 
+#include "movepicker.h"
 #include "search.h"
 #include "tt.h"
 #include "types.h"
@@ -30,7 +31,9 @@ struct Thread {
     jmp_buf jumpEnv;
 
     tTable *tt;
+
+    HistoryTable *hTable;
 };
 
-Thread *initThreads(int threadCount, tTable *tt);
+Thread *initThreads(int threadCount, tTable *tt, HistoryTable *hTable);
 void initThreadSearch(Thread *threads, Pos board, Search info);

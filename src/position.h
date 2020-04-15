@@ -79,6 +79,14 @@ static inline Bitboard squareAttackers(Pos board, int sq, int side) {
     return pawnAttackers | knightAttackers | diagAttackers | horizontalAttackers | kingAttackers;
 }
 
+static inline int moveFrom(Move move) {
+    return move.value & 63;
+}
+
+static inline int moveTo(Move move) {
+    return (move.value >> 6) & 63;
+}
+
 static inline int pieceType(int piece) {
     // first 4 bits
     return (piece & 7);// - 1;

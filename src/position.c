@@ -175,8 +175,8 @@ int makeMove(Pos* board, Move move) {
     board->history[board->plyLength++] = board->hash;
 
     // First and second 6 bits
-    int from = move.value & 63;
-    int to = (move.value >> 6) & 63;
+    int from = moveFrom(move);
+    int to = moveTo(move);
     Bitboard tobb = 1ULL << to;
     Bitboard frombb = 1ULL << from;
     Bitboard toFrom = frombb | tobb;
@@ -304,8 +304,8 @@ void undoMove(Pos* board, Move move) {
     board->plyLength--;
 
     // First and secont 6 bits
-    int from = move.value & 63;
-    int to = (move.value >> 6) & 63;
+    int from = moveFrom(move);
+    int to = moveTo(move);
     Bitboard tobb = 1ULL << to;
     Bitboard toFrom = (1ULL << from) | tobb;
 

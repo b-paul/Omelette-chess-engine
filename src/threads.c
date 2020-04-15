@@ -1,4 +1,5 @@
 #include "movegen.h"
+#include "movepicker.h"
 #include "position.h"
 #include "search.h"
 #include "threads.h"
@@ -6,7 +7,7 @@
 
 #include <string.h>
 
-Thread *initThreads(int threadCount, tTable *tt) {
+Thread *initThreads(int threadCount, tTable *tt, HistoryTable *hTable) {
     Thread *threads = malloc(sizeof(Thread) * threadCount);
 
     for (int i = 0; i < threadCount; i++) {
@@ -15,6 +16,7 @@ Thread *initThreads(int threadCount, tTable *tt) {
         threads[i].threadCount = threadCount;
 
         threads[i].tt = tt;
+        threads[i].hTable = hTable;
     }
 
     return threads;

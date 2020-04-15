@@ -3,6 +3,7 @@
 #include "evaluate.h"
 #include "position.h"
 #include "movegen.h"
+#include "movepicker.h"
 #include "search.h"
 #include "threads.h"
 #include "time.h"
@@ -217,8 +218,8 @@ void intToSquare(int square, char *string) {
 }
 
 void moveToStr(Move move, Pos board, char *string) {
-    int from = move.value & 0x3F;
-    int to = (move.value & 0xFC0) >> 6;
+    int from = moveFrom(move);
+    int to = moveTo(move);
 
     intToSquare(from, &string[0]);
     intToSquare(to, &string[2]);
@@ -362,6 +363,7 @@ void *go(void *args) {
 
     info.infinite = 0;
     info.ponder = 0;
+    info.maxDepth = maxDepth;
     
     if (strstr(str, "infinite") != NULL) {
         info.infinite = 1;
@@ -373,7 +375,7 @@ void *go(void *args) {
 
     for (pointer = strtok(NULL, " "); pointer != NULL; pointer = strtok(NULL, " ")) {
         if (strcmp(pointer, "depth") == 0) {
-            info.maxDepth = atoi(strtok(NULL, " "));
+            maxDepth = atoi(strtok(NULL, " "));
         } else if (strcmp(pointer, "wtime") == 0) {
             wtime = atoi(strtok(NULL, " "));
         } else if (strcmp(pointer, "btime") == 0) {
@@ -412,11 +414,11 @@ void *go(void *args) {
     return NULL;
 }
 
-void setOption(char *str, Thread **threads, tTable *tt) {
+void setOption(char *str, Thread **threads, tTable *tt, HistoryTable *hTable) {
 
     if (strstr(str, "setoption name Threads value") == str) {
         free(*threads);
-        *threads = initThreads(atoi(str + 28), tt);
+        *threads = initThreads(atoi(str + 28), tt, hTable);
     } else if (strstr(str, "setoption name Hash value") == str) {
         initTT(tt, atoi(str + 25));
     }
@@ -439,6 +441,8 @@ void bench(int argc, char **argv) {
     tTable tt;
     Thread *threads;
 
+    HistoryTable hTable;
+
     Key nodes = 0ull;
 
     int depth = argc > 2 ? atoi(argv[2]) : 6;
@@ -446,7 +450,9 @@ void bench(int argc, char **argv) {
     int ttSize = argc > 4 ? atoi(argv[4]) : 16;
 
     initTT(&tt, ttSize);
-    threads = initThreads(threadCount, &tt);
+    threads = initThreads(threadCount, &tt, &hTable);
+
+    initHistoryTable(&hTable);
 
     int startTime = getTime();
 
@@ -496,8 +502,12 @@ void uciLoop() {
     tTable tt;
     initTT(&tt, 1);
 
+    HistoryTable hTable;
+
+    initHistoryTable(&hTable);
+
     pthread_t goThread;
-    Thread *threads = initThreads(1, &tt);
+    Thread *threads = initThreads(1, &tt, &hTable);
 
     int QUIT_SIGNAL = 1;
 
@@ -598,7 +608,7 @@ void uciLoop() {
         } else if (strstr(str, "eval") == str) {
             printf("%d\n", evaluate(board));
         } else if (strstr(str, "setoption") == str) {
-            setOption(str, &threads, &tt);
+            setOption(str, &threads, &tt, &hTable);
         }
 
     } while (QUIT_SIGNAL);
@@ -618,7 +628,7 @@ void reportSearchInfo(Thread *threads) {
     
     printf("info depth %d seldepth %d nodes %lu nps %lu pv", threads[0].depth, threads[0].seldepth, nodes, nps);
 
-    for (int i = 0; i < threads[0].pv.length-1; i++) {
+    for (int i = 0; i < threads[0].pv.length; i++) {
         moveToStr(threads[0].pv.pv[i], threads[0].board, moveStr);
 
         printf(" %s", moveStr);
@@ -635,4 +645,10 @@ void reportSearchInfo(Thread *threads) {
 
     printf("\n");
     
+}
+
+void reportMoveInfo(Move move, Pos board, int index, int depth) {
+    char moveStr[6];
+    moveToStr(move, board, moveStr);
+    printf("info depth %d currmove %s currmovenumber %d\n", depth, moveStr, index);
 }

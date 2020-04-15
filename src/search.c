@@ -71,9 +71,9 @@ int qsearch(Pos board, int alpha, int beta, int height, Thread *thread, Principa
 
     MovePicker mp;
 
-    initMovePicker(&mp, ttMove);
+    initMovePicker(&mp, ttMove, height);
 
-    while ((move = selectNextMove(&mp, &board, 1)).value != NO_MOVE) {
+    while ((move = selectNextMove(&mp, thread->hTable, &board, 1)).value != NO_MOVE) {
         if (!makeMove(&board, move))
             continue;
         score = -qsearch(board, -beta, -alpha, height+1, thread, &lastPv);
@@ -123,6 +123,9 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     // PVS sets alpha to beta-1 on
     // non-PV nodes
     int PVNode = alpha != beta-1;
+
+    int RootNode = height == 0;
+
     int inCheck = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
 
     MovePicker mp;
@@ -145,16 +148,21 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         return ttEval;
     }
 
+
     ttMove.value = NO_MOVE;
 
-    initMovePicker(&mp, ttMove);
+    initMovePicker(&mp, ttMove, height);
 
-    while ((move = selectNextMove(&mp, &board, 0)).value != NO_MOVE) {
+    while ((move = selectNextMove(&mp, thread->hTable, &board, 0)).value != NO_MOVE) {
         if (!makeMove(&board, move))
             continue;
 
 
         movecnt++;
+
+        if (RootNode) {
+            reportMoveInfo(move, board, movecnt, depth);
+        }
 
         // Reductions
         if (!PVNode &&
@@ -188,6 +196,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
                 memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
 
                 if (alpha >= beta) {
+                    updateHistoryScores(thread->hTable, board, bestMove, depth, height);
                     break;
                 } 
             }

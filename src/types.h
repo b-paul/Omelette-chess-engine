@@ -85,6 +85,7 @@ enum Moves {
 };
 
 typedef struct goArgs goArgs;
+typedef struct HistoryTable HistoryTable;
 typedef struct Magic Magic;
 typedef struct Move Move;
 typedef struct MoveList MoveList;
