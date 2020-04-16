@@ -129,10 +129,9 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     int RootNode = height == 0;
 
     int isQuiet, didLMR;
-    int R = 0,E = 0;
+    int R = 0;
 
-    int wasCheck = isInCheck(board); 
-    int inCheck;
+    int inCheck = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
 
     MovePicker mp;
 
@@ -164,7 +163,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     // Null move reductions
     
     if (!PVNode &&
-        !wasCheck &&
+        !inCheck &&
         eval >= beta &&
         hasNonPawnMaterial(board)) {
 
@@ -197,14 +196,6 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
             reportMoveInfo(move, board, movecnt);
         }
 
-        inCheck = isInCheck(board);
-
-        // Extensions
-
-        // In Check extensions
-        if (inCheck)
-            E = 1;
-
         // Reductions
         if (!PVNode &&
             depth > 2 &&
@@ -220,11 +211,11 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
             didLMR = 0;
 
         if (searchPV)
-            score = -alphaBeta(board, -beta, -alpha, depth+E-1, height+1, thread, &lastPv);
+            score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         else {
-            score = -alphaBeta(board, -alpha-1, -alpha, depth+E-R-1, height+1, thread, &lastPv);
+            score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
             if (score > alpha && didLMR)
-                score = -alphaBeta(board, -alpha-1, -alpha, depth+E-1, height+1, thread, &lastPv);
+                score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
         undoMove(&board, move);
@@ -253,7 +244,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
     // Check for checkmate/stalemate
     if (!movecnt) {
-        bestScore = wasCheck ? -999999+height : 0;
+        bestScore = inCheck ? -999999+height : 0;
     }
 
     addEntry(hashEntry, board.hash, bestMove, depth, bestScore, EXACT);
