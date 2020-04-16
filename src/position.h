@@ -119,8 +119,8 @@ static inline int castlePathAttacked(Pos board, Bitboard castlePath) {
 }
 
 static inline int moveIsTactical(Move move, Pos board) {
-    int to = (move.value >> 6) & 63;
-    return board.pieceList[to] ||
+    int to = moveTo(move);
+    return board.pieceList[to] != NONE ||
            moveType(move) == ENPAS ||
            promotePiece(move);
 }

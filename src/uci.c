@@ -647,8 +647,8 @@ void reportSearchInfo(Thread *threads) {
     
 }
 
-void reportMoveInfo(Move move, Pos board, int index, int depth) {
+void reportMoveInfo(Move move, Pos board, int index) {
     char moveStr[6];
     moveToStr(move, board, moveStr);
-    printf("info depth %d currmove %s currmovenumber %d\n", depth, moveStr, index);
+    printf("info currmove %s currmovenumber %d\n", moveStr, index);
 }

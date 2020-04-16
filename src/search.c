@@ -14,6 +14,8 @@
 
 volatile int STOP_SEARCH = 0;
 
+int futilityMargin = 300;
+
 Bitboard perft(Pos board, int depth, int isRoot) {
   if (depth == 0) return 1;
 
@@ -126,6 +128,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
     int RootNode = height == 0;
 
+    int isQuiet, didLMR;
     int R = 0;
 
     int inCheck = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
@@ -180,31 +183,39 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     initMovePicker(&mp, ttMove, height);
 
     while ((move = selectNextMove(&mp, thread->hTable, &board, 0)).value != NO_MOVE) {
+
+        isQuiet = !moveIsTactical(move, board);
+
         if (!makeMove(&board, move))
             continue;
 
 
         movecnt++;
 
-        if (RootNode) {
-            reportMoveInfo(move, board, movecnt, depth);
+        if (RootNode && thread->index == 0) {
+            reportMoveInfo(move, board, movecnt);
         }
 
         // Reductions
         if (!PVNode &&
-            !moveIsTactical(move, board) &&
-            !inCheck &&
             depth > 2 &&
             movecnt > 1) {
-            R += reductionTable[depth][movecnt];
-        }
+
+            didLMR = 1;
+
+            R = reductionTable[min(depth, 63)][min(movecnt, 63)];
+
+            R += isQuiet;
+
+        } else
+            didLMR = 0;
 
         if (searchPV)
-            score = -alphaBeta(board, -beta, -alpha, depth-R-1, height+1, thread, &lastPv);
+            score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         else {
             score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
-            if (score > alpha)
-                score = -alphaBeta(board, -beta, -alpha, depth-R-1, height+1, thread, &lastPv);
+            if (score > alpha && didLMR)
+                score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
         undoMove(&board, move);
@@ -213,9 +224,10 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
             bestScore = score;
             bestMove = move;
 
+            searchPV = 0;
+
             if (score > alpha) {
                 alpha = score;
-                searchPV = 0;
             
                 pv->length = lastPv.length + 1;
                 pv->pv[0] = move;
