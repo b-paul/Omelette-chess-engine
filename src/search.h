@@ -2,6 +2,8 @@
 
 #include "types.h"
 
+int futilityMargin = 300;
+
 struct PrincipalVariation {
     Move pv[2048];
     int length;
