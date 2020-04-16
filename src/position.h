@@ -124,3 +124,7 @@ static inline int moveIsTactical(Move move, Pos board) {
            moveType(move) == ENPAS ||
            promotePiece(move);
 }
+
+static inline int isInCheck(Pos board) {
+    return squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
+}
