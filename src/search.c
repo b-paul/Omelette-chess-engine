@@ -196,6 +196,8 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
             reportMoveInfo(move, board, movecnt);
         }
 
+        R = 0;
+
         // Reductions
         if (!PVNode &&
             depth > 2 &&
