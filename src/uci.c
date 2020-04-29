@@ -401,7 +401,7 @@ void *go(void *args) {
     info.nodes = 0;
     info.maxDepth = maxDepth;
     info.startTime = getTime();
-    info.time = (movetime != -1 ? movetime : (board.turn ? (btime/movestogo + binc) : (wtime/movestogo + winc))); // change this later
+    info.time = (movetime != -1 ? movetime : (board.turn ? (btime/movestogo) : (wtime/movestogo))); // change this later
 
     initThreadSearch(threads, board, info);
     
