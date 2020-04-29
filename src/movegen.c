@@ -126,6 +126,8 @@ void genMoves(MoveList* moves, Pos *board, int type) {
     board->lastCastle = board->castlePerms;
     board->lastFiftyRule = board->fiftyMoveRule;
 
+    //printBoard(*board);
+
     genPawnMoves(moves, *board, type);
 
     // return;

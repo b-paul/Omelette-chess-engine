@@ -45,8 +45,8 @@ void initSearch() {
 }
 
 int qsearch(Pos board, int alpha, int beta, int height, Thread *thread, PrincipalVariation *pv) {
-    if (height > thread->seldepth) thread->seldepth = height;
     thread->nodes++;
+    if (height > thread->seldepth) thread->seldepth = height;
 
     if (STOP_SEARCH || timeLeft(*thread) <= 0) longjmp(thread->jumpEnv, 1);
 
@@ -106,8 +106,8 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         return qsearch(board, alpha, beta, height, thread, pv);
     }
 
-    if (height > thread->seldepth) thread->seldepth = height;
     thread->nodes++;
+    if (height > thread->seldepth) thread->seldepth = height;
 
     if (STOP_SEARCH || timeLeft(*thread) <= 0) longjmp(thread->jumpEnv, 1);
 
@@ -128,7 +128,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
     int RootNode = height == 0;
 
-    int isQuiet, didLMR;
+    int isQuiet;
     int R = 0;
 
     int inCheck = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
@@ -167,7 +167,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         eval >= beta &&
         hasNonPawnMaterial(board)) {
 
-        R = depth > 6? 4 : 3;
+        R = depth > 6 ? 4 : 3;
         makeNullMove(&board);
         score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
         undoNullMove(&board);
@@ -201,22 +201,19 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         // Reductions
         if (!PVNode &&
             depth > 2 &&
-            movecnt > 1) {
-
-            didLMR = 1;
+            movecnt > 2) {
 
             R = reductionTable[min(depth, 63)][min(movecnt, 63)];
 
             R += isQuiet;
 
-        } else
-            didLMR = 0;
+        }
 
         if (searchPV)
             score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         else {
             score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
-            if (score > alpha && didLMR)
+            if (score > alpha && R)
                 score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
@@ -228,12 +225,12 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
             searchPV = 0;
 
+            pv->length = lastPv.length + 1;
+            pv->pv[0] = move;
+            memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
+
             if (score > alpha) {
                 alpha = score;
-            
-                pv->length = lastPv.length + 1;
-                pv->pv[0] = move;
-                memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
 
                 if (alpha >= beta) {
                     updateHistoryScores(thread->hTable, board, bestMove, depth, height);

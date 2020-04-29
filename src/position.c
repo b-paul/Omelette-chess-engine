@@ -168,6 +168,7 @@ int isDrawn(Pos board, int height) {
 
 int makeMove(Pos* board, Move move) {
 
+    assert(move.value != NO_MOVE);
     if (move.value == NO_MOVE) return 0;
 
     board->fiftyMoveRule++;
@@ -183,6 +184,11 @@ int makeMove(Pos* board, Move move) {
 
     assert(validSquare(from));
     assert(validSquare(to));
+    if (board->pieceList[from] == NONE) {
+        printBoard(*board);
+        printf("from: %d\n", from);
+    }
+    assert(board->pieceList[from] != NONE);
 
     assert(board->pieces[KING] & board->sides[board->turn]);
 
@@ -242,6 +248,9 @@ int makeMove(Pos* board, Move move) {
         board->lastCapture = board->pieceList[capSq]; 
         board->pieceList[capSq] = NONE;
     } else if (board->pieceList[to] != NONE) {
+
+        // Cant capture our own piece
+        assert(((board->pieceList[to] >> 3) & 1) != board->turn);
 
         Bitboard cap = 1ULL << to;
         int capturedPiece = board->pieceList[to];
