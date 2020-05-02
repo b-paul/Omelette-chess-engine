@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/mman.h>
 
 void clearTT(tTable *table) {
     for (int i = 0; i < table->entryCount; i++) {
@@ -31,13 +33,13 @@ void initTT(tTable *table, int size) {
     if (table->table != NULL)
         free(table->table);
 
-    table->table = (ttEntry*)malloc(table->entryCount * sizeof(ttEntry));
+    table->table = (ttEntry*)aligned_alloc(1048576, sizeBytes);
+    madvise(table->table, size, MADV_HUGEPAGE);
+
+    memset(table->table, 0, sizeBytes);
 
     if (table->table == NULL)
         printf("Failed to allocate %d MB to the hash table\n", size);
-    else {
-        table->table = (ttEntry*)malloc(table->entryCount * sizeof(ttEntry));
-    }
 
     clearTT(table);
 
