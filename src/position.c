@@ -130,20 +130,20 @@ Bitboard sliderBlockers(Pos board, int square) {
         return result;
 }
 
-int isFiftyMoveDraw(Pos board) {
+int isFiftyMoveDraw(Pos *board) {
     // Fifty moves == 100 plys
-    return board.fiftyMoveRule >= 100;
+    return board->fiftyMoveRule >= 100;
     // Should check for not mate as well
 }
 
-int isRepetitionDraw(Pos board, int height) {
+int isRepetitionDraw(Pos *board, int height) {
     int repeats = 0; 
 
-    for (int i = board.plyLength-2; i >= 0; i-=2) {
-        if (i < board.plyLength - board.fiftyMoveRule) break;
+    for (int i = board->plyLength-2; i >= 0; i-=2) {
+        if (i < board->plyLength - board->fiftyMoveRule) break;
 
-        if (board.history[i] == board.hash &&
-           (i > board.plyLength - height || ++repeats == 2)) {
+        if (board->history[i] == board->hash &&
+           (i > board->plyLength - height || ++repeats == 2)) {
             return 1;
 
         }
@@ -151,14 +151,14 @@ int isRepetitionDraw(Pos board, int height) {
     return 0;
 }
 
-int isMaterialDraw(Pos board) {
-    return !(board.pieces[PAWN] | board.pieces[ROOK] | board.pieces[QUEEN]) &&
-           (!moreOneBit(board.sides[WHITE]) || !moreOneBit(board.sides[BLACK])) &&
-           (!moreOneBit(board.pieces[BISHOP] | board.pieces[KNIGHT]) ||
-           (!board.pieces[BISHOP] && popcnt(board.pieces[KNIGHT]) <= 2));
+int isMaterialDraw(Pos *board) {
+    return !(board->pieces[PAWN] | board->pieces[ROOK] | board->pieces[QUEEN]) &&
+           (!moreOneBit(board->sides[WHITE]) || !moreOneBit(board->sides[BLACK])) &&
+           (!moreOneBit(board->pieces[BISHOP] | board->pieces[KNIGHT]) ||
+           (!board->pieces[BISHOP] && popcnt(board->pieces[KNIGHT]) <= 2));
 }
 
-int isDrawn(Pos board, int height) {
+int isDrawn(Pos *board, int height) {
     return isFiftyMoveDraw(board) ||
            isRepetitionDraw(board, height) ||
            isMaterialDraw(board);
@@ -176,8 +176,8 @@ int makeMove(Pos* board, Move *move) {
     board->history[board->plyLength++] = board->hash;
 
     // First and second 6 bits
-    int from = moveFrom(*move);
-    int to = moveTo(*move);
+    int from = moveFrom(move);
+    int to = moveTo(move);
     Bitboard tobb = 1ULL << to;
     Bitboard frombb = 1ULL << from;
     Bitboard toFrom = frombb | tobb;
@@ -192,7 +192,7 @@ int makeMove(Pos* board, Move *move) {
 
     int pushDir = (board->turn) ? -8 : 8;
 
-    if (moveType(*move) == CASTLE) {
+    if (moveType(move) == CASTLE) {
 
         int rookTo = sq((to > from) ? 5 : 3, rank(to));
         int rookFrom = sq((to > from) ? 7 : 0, rank(to));
@@ -205,11 +205,11 @@ int makeMove(Pos* board, Move *move) {
         board->hash ^= zobristPieces[rookFrom][board->pieceList[rookFrom]];
         board->hash ^= zobristPieces[rookTo][board->pieceList[rookTo]];
 
-    } else if (moveType(*move) == PROMOTE) {
+    } else if (moveType(move) == PROMOTE) {
 
         assert(pieceType(piece) == PAWN);
 
-        int promote = promotePiece(*move);
+        int promote = promotePiece(move);
 
         board->hash ^= zobristPieces[to][piece];
 
@@ -229,7 +229,7 @@ int makeMove(Pos* board, Move *move) {
 
     // Captures
     
-    if (moveType(*move) == ENPAS) {
+    if (moveType(move) == ENPAS) {
 
         int capSq = to - pushDir;
 
@@ -292,18 +292,18 @@ int makeMove(Pos* board, Move *move) {
 
     assert(board->pieces[KING] & board->sides[!board->turn]);
 
-    if (squareAttackers(*board, getlsb(board->pieces[KING] & board->sides[!board->turn]), !board->turn)) {
+    if (squareAttackers(board, getlsb(board->pieces[KING] & board->sides[!board->turn]), !board->turn)) {
         return 0;
     }
     return 1;
 }
 
-void undoMove(Pos* board, Move move, Undo undo) {
+void undoMove(Pos* board, Move *move, Undo *undo) {
 
-    board->enPas = undo.lastEnPas;
-    board->hash = undo.lastHash;
-    board->castlePerms = undo.lastCastle;
-    board->fiftyMoveRule = undo.lastFiftyRule;
+    board->enPas = undo->lastEnPas;
+    board->hash = undo->lastHash;
+    board->castlePerms = undo->lastCastle;
+    board->fiftyMoveRule = undo->lastFiftyRule;
 
     board->plyLength--;
 
@@ -351,15 +351,15 @@ void undoMove(Pos* board, Move move, Undo undo) {
         int pushDir = (board->turn) ? 8 : -8;
         Bitboard epBB = shift(tobb, pushDir); 
         int epSq = to + pushDir;
-        board->pieceList[epSq] = move.lastCapture;
+        board->pieceList[epSq] = move->lastCapture;
         board->pieces[PAWN] ^= epBB;
         board->sides[!board->turn] ^= epBB;
         board->pieceList[to] = NONE;
 
-    } else if (move.lastCapture) {
+    } else if (move->lastCapture) {
 
-        board->pieceList[to] = move.lastCapture;
-        board->pieces[pieceType(move.lastCapture)] ^= tobb;
+        board->pieceList[to] = move->lastCapture;
+        board->pieces[pieceType(move->lastCapture)] ^= tobb;
         board->sides[!board->turn] ^= tobb;
     
     } else {

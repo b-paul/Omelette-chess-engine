@@ -3,4 +3,4 @@
 #include "types.h"
 
 void initEval();
-int evaluate(Pos board);
+int evaluate(Pos *board);

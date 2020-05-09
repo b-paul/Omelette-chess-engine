@@ -108,27 +108,27 @@ int PSQTEval(Pos board) {
     return result;
 }
 
-int phase(Pos board) {
+int phase(Pos *board) {
     int p = 24;
-    p -= popcnt(board.pieces[KNIGHT] | board.pieces[BISHOP]);
-    p -= popcnt(board.pieces[ROOK]) * 2;
-    p -= popcnt(board.pieces[QUEEN]) * 4;
+    p -= popcnt(board->pieces[KNIGHT] | board->pieces[BISHOP]);
+    p -= popcnt(board->pieces[ROOK]) * 2;
+    p -= popcnt(board->pieces[QUEEN]) * 4;
     return (p * 256 + 12)/12;
 }
 
 // Evaluate a board position
-int evaluate(Pos board) {
+int evaluate(Pos *board) {
     
     // Return value
 
     int result = 0;
 
-    result += PSQTEval(board);
+    result += PSQTEval(*board);
 
     int p = phase(board);
     int mg = mgS(result);
     int eg = egS(result);
     result = ((mg * (256-p)) + (eg * p))/256;
 
-    return (board.turn ? -result : result);
+    return (board->turn ? -result : result);
 }

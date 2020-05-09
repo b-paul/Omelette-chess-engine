@@ -29,15 +29,15 @@ Bitboard perft(Pos *board, int depth, int isRoot) {
     Move ttMove;
     ttMove.value = NO_MOVE;
 
-    initMovePicker(&mp, board, ttMove, 0);
+    initMovePicker(&mp, board, &ttMove, 0);
 
     for (int i = 0; i < moves.count; i++) {
         if (!makeMove(board, &moves.moves[i])) {
-            undoMove(board, moves.moves[i], mp.undo);
+            undoMove(board, &moves.moves[i], &mp.undo);
             continue;
         }
         nodes += perft(board, depth - 1, 0);
-        undoMove(board, moves.moves[i], mp.undo);
+        undoMove(board, &moves.moves[i], &mp.undo);
     }
     return nodes;
 }
@@ -55,9 +55,9 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
     thread->nodes++;
     if (height > thread->seldepth) thread->seldepth = height;
 
-    if (STOP_SEARCH || timeLeft(*thread) <= 0) longjmp(thread->jumpEnv, 1);
+    if (STOP_SEARCH || timeLeft(thread) <= 0) longjmp(thread->jumpEnv, 1);
 
-    int standPat = evaluate(*board);
+    int standPat = evaluate(board);
 
     if (standPat >= beta)
         return standPat;
@@ -81,16 +81,16 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
 
     MovePicker mp;
 
-    initMovePicker(&mp, board, ttMove, height);
+    initMovePicker(&mp, board, &ttMove, height);
 
     while ((move = selectNextMove(&mp, thread->hTable, board, 1)).value != NO_MOVE) {
         if (!makeMove(board, &move)) {
-            undoMove(board, move, mp.undo);
+            undoMove(board, &move, &mp.undo);
             continue;
         }
 
         score = -qsearch(board, -beta, -alpha, height+1, thread, &lastPv);
-        undoMove(board, move, mp.undo);
+        undoMove(board, &move, &mp.undo);
 
         if (score > bestScore) {
             bestScore = score;
@@ -120,10 +120,10 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     thread->nodes++;
     if (height > thread->seldepth) thread->seldepth = height;
 
-    if (STOP_SEARCH || timeLeft(*thread) <= 0) longjmp(thread->jumpEnv, 1);
+    if (STOP_SEARCH || timeLeft(thread) <= 0) longjmp(thread->jumpEnv, 1);
 
     // check for draws
-    if (isDrawn(*board, height)) return 0;
+    if (isDrawn(board, height)) return 0;
 
     PrincipalVariation lastPv;
     lastPv.length = 0;
@@ -143,7 +143,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     int isQuiet;
     int R = 0;
 
-    int inCheck = squareAttackers(*board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
+    int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
 
     MovePicker mp;
 
@@ -165,7 +165,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         return ttEval;
     }
 
-    int eval = evaluate(*board);
+    int eval = evaluate(board);
 
     // Futility Pruning
     if (!PVNode &&
@@ -177,7 +177,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     if (!PVNode &&
         !inCheck &&
         eval >= beta &&
-        hasNonPawnMaterial(*board)) {
+        hasNonPawnMaterial(board)) {
 
         R = depth > 6 ? 4 : 3;
         Undo undo = makeNullMove(board);
@@ -192,14 +192,14 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     ttMove.value = NO_MOVE;
 
-    initMovePicker(&mp, board, ttMove, height);
+    initMovePicker(&mp, board, &ttMove, height);
 
     while ((move = selectNextMove(&mp, thread->hTable, board, 0)).value != NO_MOVE) {
 
-        isQuiet = !moveIsTactical(move, *board);
+        isQuiet = !moveIsTactical(&move, board);
 
         if (!makeMove(board, &move)) {
-            undoMove(board, move, mp.undo);
+            undoMove(board, &move, &mp.undo);
             continue;
         }
 
@@ -230,7 +230,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
                 score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
-        undoMove(board, move, mp.undo);
+        undoMove(board, &move, &mp.undo);
 
         if (score > bestScore) {
             bestScore = score;
@@ -249,7 +249,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
                 }
 
                 if (alpha >= beta) {
-                    updateHistoryScores(thread->hTable, *board, bestMove, depth, height);
+                    updateHistoryScores(thread->hTable, board, &bestMove, depth, height);
                     break;
                 } 
             }
@@ -262,7 +262,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         bestScore = inCheck ? -999999+height : 0;
     }
 
-    addEntry(hashEntry, board->hash, bestMove, depth, bestScore, EXACT);
+    addEntry(hashEntry, board->hash, &bestMove, depth, bestScore, EXACT);
 
     return bestScore;
 

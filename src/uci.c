@@ -218,14 +218,14 @@ void intToSquare(int square, char *string) {
 }
 
 void moveToStr(Move move, Pos board, char *string) {
-    int from = moveFrom(move);
-    int to = moveTo(move);
+    int from = moveFrom(&move);
+    int to = moveTo(&move);
 
     intToSquare(from, &string[0]);
     intToSquare(to, &string[2]);
 
     //promotion thing
-    switch (promotePiece(move)) {
+    switch (promotePiece(&move)) {
         case QUEEN:
             string[4] = 'q';
             break;
@@ -556,17 +556,17 @@ void uciLoop() {
             Move ttMove;
             ttMove.value = NO_MOVE;
 
-            initMovePicker(&mp, &board, ttMove, 0);
+            initMovePicker(&mp, &board, &ttMove, 0);
             
             for (int i = 0; i < moves.count; i++) {
                 if (!makeMove(&board, &moves.moves[i])) {
-                    undoMove(&board, moves.moves[i], mp.undo);
+                    undoMove(&board, &moves.moves[i], &mp.undo);
                     continue;
                 }
 
                 Bitboard a = perft(&board, atoi(ptr), 1);
 
-                undoMove(&board, moves.moves[i], mp.undo);
+                undoMove(&board, &moves.moves[i], &mp.undo);
 
                 moveToStr(moves.moves[i], board, mov);
                 printf("%s: %llu\n", mov, a);
@@ -613,7 +613,7 @@ void uciLoop() {
         } else if (strstr(str, "stop") == str) {
             STOP_SEARCH = 1;
         } else if (strstr(str, "eval") == str) {
-            printf("%d\n", evaluate(board));
+            printf("%d\n", evaluate(&board));
         } else if (strstr(str, "setoption") == str) {
             setOption(str, &threads, &tt, &hTable);
         }

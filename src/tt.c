@@ -45,9 +45,9 @@ void initTT(tTable *table, int size) {
 
 }
 
-void addEntry(ttEntry *entry, Key key, Move move, int depth, int eval, int type) {
+void addEntry(ttEntry *entry, Key key, Move *move, int depth, int eval, int type) {
     entry->key = key;
-    entry->move = move;
+    entry->move = *move;
     entry->depth = depth;
     entry->eval = eval;
     entry->type = type;

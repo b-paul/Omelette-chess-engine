@@ -10,8 +10,8 @@ static inline int getTime() {
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;;
 }
 
-static inline int timeLeft(Thread thread) {
-    if (thread.infinite) return 1;
+static inline int timeLeft(Thread *thread) {
+    if (thread->infinite) return 1;
     int curTime = getTime();
-    return thread.maxTime - (curTime - thread.startTime);
+    return thread->maxTime - (curTime - thread->startTime);
 }

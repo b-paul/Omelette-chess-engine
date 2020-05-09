@@ -38,6 +38,6 @@ enum MoveStages {
 };
 
 void initHistoryTable(HistoryTable *table);
-void updateHistoryScores(HistoryTable *table, Pos board, Move move, int depth, int height);
-void initMovePicker(MovePicker *mp, Pos *board, Move ttMove, int height);
+void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, int depth, int height);
+void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, int height);
 Move selectNextMove(MovePicker *mp, HistoryTable *table, Pos *board, int onlyNoisy);

@@ -19,13 +19,13 @@ void initHistoryTable(HistoryTable *table) {
     }
 }
 
-void updateHistoryScores(HistoryTable *table, Pos board, Move move, int depth, int height) {
+void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, int depth, int height) {
     int bonus = depth*depth;
-    table->historyScores[board.turn][moveFrom(move)][moveTo(move)] += bonus;
+    table->historyScores[board->turn][moveFrom(move)][moveTo(move)] += bonus;
 
-    if (table->killers[height][0].value != move.value) {
+    if (table->killers[height][0].value != move->value) {
         table->killers[height][1] = table->killers[height][1];
-        table->killers[height][0] = move;
+        table->killers[height][0] = *move;
     }
 }
 
@@ -37,7 +37,7 @@ void popMove(MoveList *moves, int index) {
     moves->moves[index] = moves->moves[--moves->count];
 }
 
-void initMovePicker(MovePicker *mp, Pos *board, Move ttMove, int height) {
+void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, int height) {
 
     // Init the undo
     mp->undo.lastEnPas = board->enPas;
@@ -53,14 +53,14 @@ void initMovePicker(MovePicker *mp, Pos *board, Move ttMove, int height) {
 
     mp->quiet.count = 0;
 
-    mp->ttMove = ttMove;
+    mp->ttMove = *ttMove;
 }
 
-int nextMoveIndex(MoveList moves, int index) {
+int nextMoveIndex(MoveList *moves, int index) {
     int bestIndex = index;
 
-    for (index++; index < moves.count; index++) {
-        if (moves.moves[index].score > moves.moves[bestIndex].score) {
+    for (index++; index < moves->count; index++) {
+        if (moves->moves[index].score > moves->moves[bestIndex].score) {
             bestIndex = index;
         }
     }
@@ -68,30 +68,30 @@ int nextMoveIndex(MoveList moves, int index) {
     return bestIndex;
 }
 
-void evalNoisy(MoveList *moves, Pos board) {
+void evalNoisy(MoveList *moves, Pos *board) {
     // MVV-LVA is used
     int from,to,fPiece,tPiece;
     for (int i = 0; i < moves->count; i++) {
-        from = moveFrom(moves->moves[i]);
-        to = moveTo(moves->moves[i]);
-        fPiece = pieceType(board.pieceList[from]);
-        tPiece = pieceType(board.pieceList[to]);
+        from = moveFrom(&moves->moves[i]);
+        to = moveTo(&moves->moves[i]);
+        fPiece = pieceType(board->pieceList[from]);
+        tPiece = pieceType(board->pieceList[to]);
         moves->moves[i].score = MVVLVAValues[tPiece] - fPiece;
         
         // Since enpas moves dont have their capture on the
         // to square we have to set the score separately
-        if (moveType(moves->moves[i]) == ENPAS)
+        if (moveType(&moves->moves[i]) == ENPAS)
             moves->moves[i].score = MVVLVAValues[PAWN] - PAWN;
 
         // Add a bonus for queen promotions too;
-        if (promotePiece(moves->moves[i]) == QUEEN) {
+        if (promotePiece(&moves->moves[i]) == QUEEN) {
             moves->moves[i].score += MVVLVAValues[QUEEN];
         }
 
     }
 }
 
-void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos board, int height) {
+void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos *board, int height) {
     int from, to;
     for (int i = 0; i < moves->count; i++) {
         // If the move is a killer move
@@ -101,9 +101,9 @@ void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos board, int height) {
         } else if (moves->moves[i].value == hTable->killers[height][1].value) {
             moves->moves[i].score = 1ull << 30;
         }
-        from = moveFrom(moves->moves[i]);
-        to = moveTo(moves->moves[i]);
-        moves->moves[i].score = hTable->historyScores[board.turn][from][to];
+        from = moveFrom(&moves->moves[i]);
+        to = moveTo(&moves->moves[i]);
+        moves->moves[i].score = hTable->historyScores[board->turn][from][to];
     }
 }
 
@@ -120,7 +120,7 @@ Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, int onlyNo
         case GEN_NOISY:
 
             genMoves(&mp->noisy, board, NOISY);
-            evalNoisy(&mp->noisy, *board);
+            evalNoisy(&mp->noisy, board);
 
             mp->noisyLeft = mp->noisy.count;
 
@@ -130,7 +130,7 @@ Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, int onlyNo
 
             if (mp->noisyLeft) {
                 mp->noisyLeft--;
-                best = nextMoveIndex(mp->noisy, 0);
+                best = nextMoveIndex(&mp->noisy, 0);
                 bestMove = mp->noisy.moves[best];
                 if (bestMove.score >= 0) {
                     popMove(&mp->noisy, best);
@@ -151,7 +151,7 @@ Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, int onlyNo
         case GEN_QUIETS:
 
             genMoves(&mp->quiet, board, QUIET);
-            evalQuiet(&mp->quiet, hTable, *board, mp->height);
+            evalQuiet(&mp->quiet, hTable, board, mp->height);
 
             mp->quietLeft = mp->quiet.count;
 
@@ -161,7 +161,7 @@ Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, int onlyNo
 
             if (mp->quietLeft) {
                 mp->quietLeft--;
-                best = nextMoveIndex(mp->quiet, 0);
+                best = nextMoveIndex(&mp->quiet, 0);
                 bestMove = mp->quiet.moves[best];
 
                 popMove(&mp->quiet, best);
@@ -177,7 +177,7 @@ Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, int onlyNo
 
             if (mp->noisyLeft) {
                 mp->noisyLeft--;
-                best = nextMoveIndex(mp->noisy, 0);
+                best = nextMoveIndex(&mp->noisy, 0);
                 bestMove = mp->noisy.moves[best];
 
                 popMove(&mp->noisy, best);

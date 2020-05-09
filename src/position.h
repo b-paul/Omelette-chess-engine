@@ -11,9 +11,9 @@ void initPosition();
 void resetBoard(Pos* board);
 void printBoard(Pos board);
 Bitboard sliderBlockers(Pos board, int square);
-int isDrawn(Pos board, int height);
+int isDrawn(Pos *board, int height);
 int makeMove(Pos* board, Move *move);
-void undoMove(Pos* board, Move move, Undo undo);
+void undoMove(Pos* board, Move *move, Undo *undo);
 Undo makeNullMove(Pos *board);
 void undoNullMove(Pos *board, Undo undo);
 
@@ -54,16 +54,21 @@ struct Undo {
 
 // Is check
 // side is the side to check
-static inline Bitboard squareAttackers(Pos board, int sq, int side) {
-    Bitboard them = board.sides[!side];
-    Bitboard occ = board.sides[WHITE] | board.sides[BLACK];
+static inline Bitboard squareAttackers(Pos *board, int sq, int side) {
+    if (sq > 63) {
+        printBoard(*board);
+        printBitBoard(board->pieces[KING]);
+        printBitBoard(board->sides[side]);
+    }
+    Bitboard them = board->sides[!side];
+    Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
 
-    Bitboard theirPawns = board.pieces[PAWN] & them;
-    Bitboard theirKnights = board.pieces[KNIGHT] & them;
-    Bitboard theirBishops = board.pieces[BISHOP] & them;
-    Bitboard theirRooks = board.pieces[ROOK] & them;
-    Bitboard theirQueens = board.pieces[QUEEN] & them;
-    Bitboard theirKing = board.pieces[KING] & them;
+    Bitboard theirPawns = board->pieces[PAWN] & them;
+    Bitboard theirKnights = board->pieces[KNIGHT] & them;
+    Bitboard theirBishops = board->pieces[BISHOP] & them;
+    Bitboard theirRooks = board->pieces[ROOK] & them;
+    Bitboard theirQueens = board->pieces[QUEEN] & them;
+    Bitboard theirKing = board->pieces[KING] & them;
 
     Bitboard pawnAttackers = getPawnAttacks(sq, side) & theirPawns;
     Bitboard knightAttackers = getKnightAttacks(sq) & theirKnights;
@@ -79,19 +84,19 @@ static inline Bitboard squareAttackers(Pos board, int sq, int side) {
     return pawnAttackers | knightAttackers | diagAttackers | horizontalAttackers | kingAttackers;
 }
 
-static inline int hasNonPawnMaterial(Pos board) {
-    return (board.pieces[KNIGHT] ||
-            board.pieces[BISHOP] ||
-            board.pieces[ROOK] ||
-            board.pieces[QUEEN]) ? 1 : 0;
+static inline int hasNonPawnMaterial(Pos *board) {
+    return (board->pieces[KNIGHT] ||
+            board->pieces[BISHOP] ||
+            board->pieces[ROOK] ||
+            board->pieces[QUEEN]) ? 1 : 0;
 }
 
-static inline int moveFrom(Move move) {
-    return move.value & 63;
+static inline int moveFrom(Move *move) {
+    return move->value & 63;
 }
 
-static inline int moveTo(Move move) {
-    return (move.value >> 6) & 63;
+static inline int moveTo(Move *move) {
+    return (move->value >> 6) & 63;
 }
 
 static inline int pieceType(int piece) {
@@ -99,26 +104,26 @@ static inline int pieceType(int piece) {
     return (piece & 7);// - 1;
 }
 
-static inline int moveType(Move move) {
-    return move.value & 0x18000;
+static inline int moveType(Move *move) {
+    return move->value & 0x18000;
 }
 
-static inline int promotePiece(Move move) {
-    return (move.value & 0x7000) >> 12;
+static inline int promotePiece(Move *move) {
+    return (move->value & 0x7000) >> 12;
 }
 
-static inline int castlePathAttacked(Pos board, Bitboard castlePath) {
+static inline int castlePathAttacked(Pos *board, Bitboard castlePath) {
     while (castlePath) {
-        if (squareAttackers(board, poplsb(&castlePath), board.turn)) {
+        if (squareAttackers(board, poplsb(&castlePath), board->turn)) {
             return 0;
         }
     }
     return 1;
 }
 
-static inline int moveIsTactical(Move move, Pos board) {
+static inline int moveIsTactical(Move *move, Pos *board) {
     int to = moveTo(move);
-    return board.pieceList[to] != NONE ||
+    return board->pieceList[to] != NONE ||
            moveType(move) == ENPAS ||
            promotePiece(move);
 }

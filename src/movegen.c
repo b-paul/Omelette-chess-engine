@@ -198,20 +198,20 @@ void genMoves(MoveList* moves, Pos *board, int type) {
 
     if (type != NOISY) {
         if (board->turn) { // Black castling
-            if ((board->castlePerms & CAN_BLACK_KING) && !(occ & castlePath[BLACK_KING_OCC]) && castlePathAttacked(*board, castlePath[BLACK_KING_ATTACK])) { // Kingside
+            if ((board->castlePerms & CAN_BLACK_KING) && !(occ & castlePath[BLACK_KING_OCC]) && castlePathAttacked(board, castlePath[BLACK_KING_ATTACK])) { // Kingside
                 moves->moves[moves->count].value = makeMove(G8, E8, 0, CASTLE);
                 moves->count++;
             } 
-            if ((board->castlePerms & CAN_BLACK_QUEEN) && !(occ & castlePath[BLACK_QUEEN_OCC]) && castlePathAttacked(*board, castlePath[BLACK_QUEEN_ATTACK])) { // Queenside
+            if ((board->castlePerms & CAN_BLACK_QUEEN) && !(occ & castlePath[BLACK_QUEEN_OCC]) && castlePathAttacked(board, castlePath[BLACK_QUEEN_ATTACK])) { // Queenside
                 moves->moves[moves->count].value = makeMove(C8, E8, 0, CASTLE);
                 moves->count++;
             }
         } else { // White castling
-            if ((board->castlePerms & CAN_WHITE_KING) && !(occ & castlePath[WHITE_KING_OCC]) && castlePathAttacked(*board, castlePath[WHITE_KING_ATTACK])) { // Kingside
+            if ((board->castlePerms & CAN_WHITE_KING) && !(occ & castlePath[WHITE_KING_OCC]) && castlePathAttacked(board, castlePath[WHITE_KING_ATTACK])) { // Kingside
                 moves->moves[moves->count].value = makeMove(G1, E1, 0, CASTLE);
                 moves->count++;
             } 
-            if ((board->castlePerms & CAN_WHITE_QUEEN) && !(occ & castlePath[WHITE_QUEEN_OCC]) && castlePathAttacked(*board, castlePath[WHITE_QUEEN_ATTACK])) { // Queenside
+            if ((board->castlePerms & CAN_WHITE_QUEEN) && !(occ & castlePath[WHITE_QUEEN_OCC]) && castlePathAttacked(board, castlePath[WHITE_QUEEN_ATTACK])) { // Queenside
                 moves->moves[moves->count].value = makeMove(C1, E1, 0, CASTLE);
                 moves->count++;
             }
