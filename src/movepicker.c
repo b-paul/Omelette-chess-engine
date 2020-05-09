@@ -37,7 +37,14 @@ void popMove(MoveList *moves, int index) {
     moves->moves[index] = moves->moves[--moves->count];
 }
 
-void initMovePicker(MovePicker *mp, Move ttMove, int height) {
+void initMovePicker(MovePicker *mp, Pos *board, Move ttMove, int height) {
+
+    // Init the undo
+    mp->undo.lastEnPas = board->enPas;
+    mp->undo.lastHash = board->hash;
+    mp->undo.lastCastle = board->castlePerms;
+    mp->undo.lastFiftyRule = board->fiftyMoveRule;
+
     mp->stage = TABLES_STAGE;
 
     mp->height = height;

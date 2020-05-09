@@ -338,7 +338,7 @@ void position(char* str, Pos* board) {
 
             move = strToMove(*board, pointer);
 
-            makeMove(board, move);
+            makeMove(board, &move);
 
             while (*(ptr) == ' ') ptr++;
         }
@@ -535,7 +535,7 @@ void uciLoop() {
             char* ptr = str;
             ptr+=6;
 
-            Bitboard a = perft(board, atoi(ptr), 1);
+            Bitboard a = perft(&board, atoi(ptr), 1);
 
             printf("%llu\n", a);
 
@@ -551,15 +551,22 @@ void uciLoop() {
             MoveList moves;
             moves.count = 0;
             genMoves(&moves, &board, ALLMOVES);
+
+            MovePicker mp;
+            Move ttMove;
+            ttMove.value = NO_MOVE;
+
+            initMovePicker(&mp, &board, ttMove, 0);
             
             for (int i = 0; i < moves.count; i++) {
-                if (!makeMove(&board, moves.moves[i])) {
+                if (!makeMove(&board, &moves.moves[i])) {
+                    undoMove(&board, moves.moves[i], mp.undo);
                     continue;
                 }
 
-                Bitboard a = perft(board, atoi(ptr), 1);
+                Bitboard a = perft(&board, atoi(ptr), 1);
 
-                undoMove(&board, moves.moves[i]);
+                undoMove(&board, moves.moves[i], mp.undo);
 
                 moveToStr(moves.moves[i], board, mov);
                 printf("%s: %llu\n", mov, a);
@@ -593,7 +600,7 @@ void uciLoop() {
 
                 move = strToMove(board, moveStr);
 
-                makeMove(&board, move);
+                makeMove(&board, &move);
 
                 while (*(ptr) == ' ') ptr++;
             }

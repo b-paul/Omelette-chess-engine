@@ -5,6 +5,11 @@
 struct Move {
     int value;
     int score;
+
+    // Stored when making a capture for one turn
+    // Used to undo captures
+    int lastCapture;
+
 };
 
 struct MoveList {

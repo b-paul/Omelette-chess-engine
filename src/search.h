@@ -20,6 +20,6 @@ struct Search {
     int startTime;
 };
 
-Bitboard perft(Pos board, int depth, int isRoot);
+Bitboard perft(Pos *board, int depth, int isRoot);
 void initSearch();
 Move getBestMove(Pos board, Thread *threads);

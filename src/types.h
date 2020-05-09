@@ -96,3 +96,4 @@ typedef struct Search Search;
 typedef struct Thread Thread;
 typedef struct ttEntry ttEntry;
 typedef struct tTable tTable;
+typedef struct Undo Undo;

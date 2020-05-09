@@ -118,7 +118,7 @@ int phase(Pos board) {
 
 // Evaluate a board position
 int evaluate(Pos board) {
-
+    
     // Return value
 
     int result = 0;

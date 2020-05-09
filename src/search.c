@@ -16,23 +16,30 @@ volatile int STOP_SEARCH = 0;
 
 int futilityMargin = 300;
 
-Bitboard perft(Pos board, int depth, int isRoot) {
-  if (depth == 0) return 1;
+Bitboard perft(Pos *board, int depth, int isRoot) {
+    if (depth == 0) return 1;
 
-  MoveList moves;
-  moves.count = 0;
-  genMoves(&moves, &board, ALLMOVES);
+    MoveList moves;
+    moves.count = 0;
+    genMoves(&moves, board, ALLMOVES);
 
-  int nodes = 0;
+    int nodes = 0;
 
-  for (int i = 0; i < moves.count; i++) {
-    if (!makeMove(&board, moves.moves[i])) {
-      continue;
+    MovePicker mp;
+    Move ttMove;
+    ttMove.value = NO_MOVE;
+
+    initMovePicker(&mp, board, ttMove, 0);
+
+    for (int i = 0; i < moves.count; i++) {
+        if (!makeMove(board, &moves.moves[i])) {
+            undoMove(board, moves.moves[i], mp.undo);
+            continue;
+        }
+        nodes += perft(board, depth - 1, 0);
+        undoMove(board, moves.moves[i], mp.undo);
     }
-    nodes += perft(board, depth - 1, 0);
-    undoMove(&board, moves.moves[i]);
-  }
-  return nodes;
+    return nodes;
 }
 
 int reductionTable[64][64];
@@ -44,13 +51,13 @@ void initSearch() {
         }
 }
 
-int qsearch(Pos board, int alpha, int beta, int height, Thread *thread, PrincipalVariation *pv) {
+int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, PrincipalVariation *pv) {
     thread->nodes++;
     if (height > thread->seldepth) thread->seldepth = height;
 
     if (STOP_SEARCH || timeLeft(*thread) <= 0) longjmp(thread->jumpEnv, 1);
 
-    int standPat = evaluate(board);
+    int standPat = evaluate(*board);
 
     if (standPat >= beta)
         return standPat;
@@ -66,6 +73,7 @@ int qsearch(Pos board, int alpha, int beta, int height, Thread *thread, Principa
 
     PrincipalVariation lastPv;
     lastPv.length = 0;
+    pv->length = 0;
 
     Move ttMove;
     // temp
@@ -73,13 +81,16 @@ int qsearch(Pos board, int alpha, int beta, int height, Thread *thread, Principa
 
     MovePicker mp;
 
-    initMovePicker(&mp, ttMove, height);
+    initMovePicker(&mp, board, ttMove, height);
 
-    while ((move = selectNextMove(&mp, thread->hTable, &board, 1)).value != NO_MOVE) {
-        if (!makeMove(&board, move))
+    while ((move = selectNextMove(&mp, thread->hTable, board, 1)).value != NO_MOVE) {
+        if (!makeMove(board, &move)) {
+            undoMove(board, move, mp.undo);
             continue;
+        }
+
         score = -qsearch(board, -beta, -alpha, height+1, thread, &lastPv);
-        undoMove(&board, move);
+        undoMove(board, move, mp.undo);
 
         if (score > bestScore) {
             bestScore = score;
@@ -101,7 +112,7 @@ int qsearch(Pos board, int alpha, int beta, int height, Thread *thread, Principa
     return bestScore;
 }
 
-int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thread, PrincipalVariation *pv) {
+int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *thread, PrincipalVariation *pv) {
     if (depth <= 0) {
         return qsearch(board, alpha, beta, height, thread, pv);
     }
@@ -112,10 +123,11 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     if (STOP_SEARCH || timeLeft(*thread) <= 0) longjmp(thread->jumpEnv, 1);
 
     // check for draws
-    if (isDrawn(board, height)) return 0;
+    if (isDrawn(*board, height)) return 0;
 
     PrincipalVariation lastPv;
     lastPv.length = 0;
+    pv->length = 0;
 
     int score,bestScore=-999999;
     int movecnt = 0;
@@ -131,7 +143,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     int isQuiet;
     int R = 0;
 
-    int inCheck = squareAttackers(board, getlsb(board.pieces[KING] & board.sides[board.turn]), board.turn) ? 1 : 0;
+    int inCheck = squareAttackers(*board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
 
     MovePicker mp;
 
@@ -141,7 +153,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     Move ttMove;
 
     // Probe TT
-    hashEntry = probeTT(thread->tt, board.hash, &isReplaced);
+    hashEntry = probeTT(thread->tt, board->hash, &isReplaced);
     ttEval = isReplaced ? hashEntry->eval : 0;
     ttMove.value = isReplaced ? hashEntry->move.value : NO_MOVE;
 
@@ -153,7 +165,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         return ttEval;
     }
 
-    int eval = evaluate(board);
+    int eval = evaluate(*board);
 
     // Futility Pruning
     if (!PVNode &&
@@ -165,12 +177,12 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
     if (!PVNode &&
         !inCheck &&
         eval >= beta &&
-        hasNonPawnMaterial(board)) {
+        hasNonPawnMaterial(*board)) {
 
         R = depth > 6 ? 4 : 3;
-        makeNullMove(&board);
+        Undo undo = makeNullMove(board);
         score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
-        undoNullMove(&board);
+        undoNullMove(board, undo);
         if (score > beta) {
             depth -= 4;
             if (depth <= 0)
@@ -180,20 +192,21 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
     ttMove.value = NO_MOVE;
 
-    initMovePicker(&mp, ttMove, height);
+    initMovePicker(&mp, board, ttMove, height);
 
-    while ((move = selectNextMove(&mp, thread->hTable, &board, 0)).value != NO_MOVE) {
+    while ((move = selectNextMove(&mp, thread->hTable, board, 0)).value != NO_MOVE) {
 
-        isQuiet = !moveIsTactical(move, board);
+        isQuiet = !moveIsTactical(move, *board);
 
-        if (!makeMove(&board, move))
+        if (!makeMove(board, &move)) {
+            undoMove(board, move, mp.undo);
             continue;
-
+        }
 
         movecnt++;
 
         if (RootNode && thread->index == 0) {
-            reportMoveInfo(move, board, movecnt);
+            reportMoveInfo(move, *board, movecnt);
         }
 
         R = 0;
@@ -217,7 +230,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
                 score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
-        undoMove(&board, move);
+        undoMove(board, move, mp.undo);
 
         if (score > bestScore) {
             bestScore = score;
@@ -225,15 +238,18 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
             searchPV = 0;
 
-            pv->length = lastPv.length + 1;
-            pv->pv[0] = move;
-            memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
 
             if (score > alpha) {
                 alpha = score;
 
+                if (PVNode) {
+                    pv->length = lastPv.length + 1;
+                    pv->pv[0] = move;
+                    memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
+                }
+
                 if (alpha >= beta) {
-                    updateHistoryScores(thread->hTable, board, bestMove, depth, height);
+                    updateHistoryScores(thread->hTable, *board, bestMove, depth, height);
                     break;
                 } 
             }
@@ -246,7 +262,7 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
         bestScore = inCheck ? -999999+height : 0;
     }
 
-    addEntry(hashEntry, board.hash, bestMove, depth, bestScore, EXACT);
+    addEntry(hashEntry, board->hash, bestMove, depth, bestScore, EXACT);
 
     return bestScore;
 
@@ -254,7 +270,6 @@ int alphaBeta(Pos board, int alpha, int beta, int depth, int height, Thread *thr
 
 void *startSearch(void *args) {
     Thread *thread = (Thread*)args;
-    Pos board = thread->board;
     int score, 
         alpha = -999999, beta = 999999, delta;
     int masterThread = thread->index == 0;
@@ -278,7 +293,7 @@ void *startSearch(void *args) {
 
         while (1) {
 
-            score = alphaBeta(board, alpha, beta, thread->depth, 0, thread, &pv);
+            score = alphaBeta(&thread->board, alpha, beta, thread->depth, 0, thread, &pv);
 
             if (score <= alpha) {
                 beta = (alpha+beta)/2;

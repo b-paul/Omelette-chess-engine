@@ -166,28 +166,24 @@ int isDrawn(Pos board, int height) {
 
 
 
-int makeMove(Pos* board, Move move) {
+int makeMove(Pos* board, Move *move) {
 
     assert(move.value != NO_MOVE);
-    if (move.value == NO_MOVE) return 0;
+    if (move->value == NO_MOVE) return 0;
 
     board->fiftyMoveRule++;
 
     board->history[board->plyLength++] = board->hash;
 
     // First and second 6 bits
-    int from = moveFrom(move);
-    int to = moveTo(move);
+    int from = moveFrom(*move);
+    int to = moveTo(*move);
     Bitboard tobb = 1ULL << to;
     Bitboard frombb = 1ULL << from;
     Bitboard toFrom = frombb | tobb;
 
     assert(validSquare(from));
     assert(validSquare(to));
-    if (board->pieceList[from] == NONE) {
-        printBoard(*board);
-        printf("from: %d\n", from);
-    }
     assert(board->pieceList[from] != NONE);
 
     assert(board->pieces[KING] & board->sides[board->turn]);
@@ -196,7 +192,7 @@ int makeMove(Pos* board, Move move) {
 
     int pushDir = (board->turn) ? -8 : 8;
 
-    if (moveType(move) == CASTLE) {
+    if (moveType(*move) == CASTLE) {
 
         int rookTo = sq((to > from) ? 5 : 3, rank(to));
         int rookFrom = sq((to > from) ? 7 : 0, rank(to));
@@ -209,11 +205,11 @@ int makeMove(Pos* board, Move move) {
         board->hash ^= zobristPieces[rookFrom][board->pieceList[rookFrom]];
         board->hash ^= zobristPieces[rookTo][board->pieceList[rookTo]];
 
-    } else if (moveType(move) == PROMOTE) {
+    } else if (moveType(*move) == PROMOTE) {
 
         assert(pieceType(piece) == PAWN);
 
-        int promote = promotePiece(move);
+        int promote = promotePiece(*move);
 
         board->hash ^= zobristPieces[to][piece];
 
@@ -233,7 +229,7 @@ int makeMove(Pos* board, Move move) {
 
     // Captures
     
-    if (moveType(move) == ENPAS) {
+    if (moveType(*move) == ENPAS) {
 
         int capSq = to - pushDir;
 
@@ -245,7 +241,7 @@ int makeMove(Pos* board, Move move) {
         board->hash ^= zobristPieces[capSq][board->pieceList[capSq]];
         board->pieces[PAWN] ^= cap;
         board->sides[!board->turn] ^= cap;
-        board->lastCapture = board->pieceList[capSq]; 
+        move->lastCapture = board->pieceList[capSq]; 
         board->pieceList[capSq] = NONE;
     } else if (board->pieceList[to] != NONE) {
 
@@ -255,7 +251,7 @@ int makeMove(Pos* board, Move move) {
         Bitboard cap = 1ULL << to;
         int capturedPiece = board->pieceList[to];
 
-        board->lastCapture = board->pieceList[to];
+        move->lastCapture = board->pieceList[to];
         
         assert(pieceType(capturedPiece) != KING);
 
@@ -265,7 +261,7 @@ int makeMove(Pos* board, Move move) {
 
         board->fiftyMoveRule = 0;
 
-   } else board->lastCapture = NONE;
+   } else move->lastCapture = NONE;
 
     if (board->enPas != NO_SQ) {
         board->hash ^= zobristEnPas[file(board->enPas)];
@@ -297,18 +293,17 @@ int makeMove(Pos* board, Move move) {
     assert(board->pieces[KING] & board->sides[!board->turn]);
 
     if (squareAttackers(*board, getlsb(board->pieces[KING] & board->sides[!board->turn]), !board->turn)) {
-        undoMove(board, move);
         return 0;
     }
     return 1;
 }
 
-void undoMove(Pos* board, Move move) {
+void undoMove(Pos* board, Move move, Undo undo) {
 
-    board->enPas = board->lastEnPas;
-    board->hash = board->lastHash;
-    board->castlePerms = board->lastCastle;
-    board->fiftyMoveRule = board->lastFiftyRule;
+    board->enPas = undo.lastEnPas;
+    board->hash = undo.lastHash;
+    board->castlePerms = undo.lastCastle;
+    board->fiftyMoveRule = undo.lastFiftyRule;
 
     board->plyLength--;
 
@@ -356,15 +351,15 @@ void undoMove(Pos* board, Move move) {
         int pushDir = (board->turn) ? 8 : -8;
         Bitboard epBB = shift(tobb, pushDir); 
         int epSq = to + pushDir;
-        board->pieceList[epSq] = board->lastCapture;
+        board->pieceList[epSq] = move.lastCapture;
         board->pieces[PAWN] ^= epBB;
         board->sides[!board->turn] ^= epBB;
         board->pieceList[to] = NONE;
 
-    } else if (board->lastCapture) {
+    } else if (move.lastCapture) {
 
-        board->pieceList[to] = board->lastCapture;
-        board->pieces[pieceType(board->lastCapture)] ^= tobb;
+        board->pieceList[to] = move.lastCapture;
+        board->pieces[pieceType(move.lastCapture)] ^= tobb;
         board->sides[!board->turn] ^= tobb;
     
     } else {
@@ -372,11 +367,12 @@ void undoMove(Pos* board, Move move) {
     }
 }
 
-void makeNullMove(Pos *board) {
+Undo makeNullMove(Pos *board) {
+    Undo undo;
 
-    board->lastEnPas = board->enPas;
-    board->lastHash = board->hash;
-    board->lastFiftyRule = board->fiftyMoveRule;
+    undo.lastEnPas = board->enPas;
+    undo.lastHash = board->hash;
+    undo.lastFiftyRule = board->fiftyMoveRule;
 
     board->fiftyMoveRule++;
     board->history[board->plyLength++] = board->hash;
@@ -389,12 +385,13 @@ void makeNullMove(Pos *board) {
         board->enPas = NO_SQ;
     }
 
+    return undo;
 }
 
-void undoNullMove(Pos *board) {
-    board->enPas = board->lastEnPas;
-    board->hash = board->lastHash;
-    board->fiftyMoveRule = board->lastFiftyRule;
+void undoNullMove(Pos *board, Undo undo) {
+    board->enPas = undo.lastEnPas;
+    board->hash = undo.lastHash;
+    board->fiftyMoveRule = undo.lastFiftyRule;
 
     board->plyLength--;
 

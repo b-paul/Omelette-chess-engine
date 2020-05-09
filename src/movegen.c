@@ -121,16 +121,7 @@ void genPawnMoves(MoveList* moves, Pos board, int type) {
 }
 
 void genMoves(MoveList* moves, Pos *board, int type) {
-    board->lastEnPas = board->enPas;
-    board->lastHash = board->hash;
-    board->lastCastle = board->castlePerms;
-    board->lastFiftyRule = board->fiftyMoveRule;
-
-    //printBoard(*board);
-
     genPawnMoves(moves, *board, type);
-
-    // return;
 
     Bitboard ourKnights = board->pieces[KNIGHT] & board->sides[board->turn];
     Bitboard ourBishops = board->pieces[BISHOP] & board->sides[board->turn];

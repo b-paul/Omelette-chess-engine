@@ -12,10 +12,10 @@ void resetBoard(Pos* board);
 void printBoard(Pos board);
 Bitboard sliderBlockers(Pos board, int square);
 int isDrawn(Pos board, int height);
-int makeMove(Pos* board, Move move);
-void undoMove(Pos* board, Move move);
-void makeNullMove(Pos *board);
-void undoNullMove(Pos *board);
+int makeMove(Pos* board, Move *move);
+void undoMove(Pos* board, Move move, Undo undo);
+Undo makeNullMove(Pos *board);
+void undoNullMove(Pos *board, Undo undo);
 
 Bitboard castlePath[CASTLE_CNT];
 int castleBitMasks[SQ_CNT];
@@ -41,13 +41,11 @@ struct Pos {
     int plyLength;
     Key history[2048];
 
-    // Stored when making a capture for one turn
-    // Used to undo captures
-    int lastCapture;
-
     // Zobrist hash key of the position
     Key hash;
+};
 
+struct Undo {
     int lastEnPas;
     Key lastHash;
     int lastCastle;
