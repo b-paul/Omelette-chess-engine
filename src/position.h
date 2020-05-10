@@ -39,7 +39,7 @@ struct Pos {
     int fiftyMoveRule;
 
     int plyLength;
-    Key history[2048];
+    Key history[357];
 
     // Zobrist hash key of the position
     Key hash;

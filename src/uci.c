@@ -14,7 +14,7 @@
 #include <string.h>
 #include <pthread.h>
 
-#define MAX_DEPTH 2048
+#define MAX_DEPTH 256
 
 const char* startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 

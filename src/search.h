@@ -3,7 +3,7 @@
 #include "types.h"
 
 struct PrincipalVariation {
-    Move pv[2048];
+    Move pv[256];
     int length;
     int score;
     int depth;
