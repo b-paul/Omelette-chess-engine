@@ -62,8 +62,6 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
     if (standPat >= beta)
         return standPat;
 
-    if (alpha - 200 > standPat) return standPat;
-
     if (alpha < standPat)
         alpha = standPat;
 
@@ -76,7 +74,6 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
     pv->length = 0;
 
     Move ttMove;
-    // temp
     ttMove.value = NO_MOVE;
 
     MovePicker mp;
@@ -141,7 +138,6 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     int RootNode = height == 0;
 
     int isQuiet;
-    int R = 0;
 
     int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
 
@@ -167,36 +163,9 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int eval = evaluate(board);
 
-    // Futility Pruning
-    if (!PVNode &&
-        eval - futilityMargin >= beta)
-        return eval;
-
-    // Null move reductions
-    
-    if (!PVNode &&
-        !inCheck &&
-        eval >= beta &&
-        hasNonPawnMaterial(board)) {
-
-        R = depth > 6 ? 4 : 3;
-        Undo undo = makeNullMove(board);
-        score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
-        undoNullMove(board, undo);
-        if (score > beta) {
-            depth -= 4;
-            if (depth <= 0)
-                return qsearch(board, alpha, beta, height, thread, pv);
-        }
-    }
-
-    ttMove.value = NO_MOVE;
-
     initMovePicker(&mp, board, &ttMove, height);
 
     while ((move = selectNextMove(&mp, thread->hTable, board, 0)).value != NO_MOVE) {
-
-        isQuiet = !moveIsTactical(&move, board);
 
         if (!makeMove(board, &move)) {
             undoMove(board, &move, &mp.undo);
@@ -209,25 +178,12 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             reportMoveInfo(move, *board, movecnt);
         }
 
-        R = 0;
-
-        // Reductions
-        if (!PVNode &&
-            depth > 2 &&
-            movecnt > 2) {
-
-            R = reductionTable[min(depth, 63)][min(movecnt, 63)];
-
-            R += isQuiet;
-
-        }
-
         if (searchPV)
             score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         else {
-            score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
-            if (score > alpha && R)
-                score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
+            score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
+            if (score > alpha)
+                score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
         undoMove(board, &move, &mp.undo);
