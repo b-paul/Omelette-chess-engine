@@ -168,7 +168,6 @@ int isDrawn(Pos *board, int height) {
 
 int makeMove(Pos* board, Move *move) {
 
-    assert(move.value != NO_MOVE);
     if (move->value == NO_MOVE) return 0;
 
     board->fiftyMoveRule++;
@@ -346,7 +345,7 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
 
     if (moveType(move) == ENPAS) {
         
-        assert(pieceType(board->lastCapture) == PAWN);
+        assert(pieceType(move->lastCapture) == PAWN);
 
         int pushDir = (board->turn) ? 8 : -8;
         Bitboard epBB = shift(tobb, pushDir); 
