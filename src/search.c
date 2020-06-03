@@ -137,6 +137,8 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int RootNode = height == 0;
 
+    int eval = evaluate(board);
+
     int isQuiet;
     int R;
 
@@ -160,6 +162,25 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         isReplaced &&
         hashEntry->depth >= depth) {
         return ttEval;
+    }
+
+    // Null move pruning
+    if (!PVNode &&
+        !inCheck &&
+        eval >= beta &&
+        hasNonPawnMaterial(board)) {
+        
+        R = depth > 6 ? 4 : 3;
+
+        Undo undo = makeNullMove(board);
+
+        score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
+
+        undoNullMove(board, undo);
+
+        if (score >= beta) {
+            return score;
+        }
     }
 
     initMovePicker(&mp, board, &ttMove, height);
