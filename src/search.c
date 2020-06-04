@@ -209,14 +209,16 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             R = reductionTable[min(depth, 63)][min(movecnt, 63)];
 
             R += isQuiet;
+
+            score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
         }
 
-        if (searchPV)
-            score = -alphaBeta(board, -beta, -alpha, depth-R-1, height+1, thread, &lastPv);
-        else {
-            score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
-            if (score > alpha)
-                score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
+        if ((R && score > alpha) || (!R && movecnt > 1)) {
+            score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
+        }
+
+        if (PVNode && (score > alpha || (RootNode && movecnt==1))) {
+            score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
         undoMove(board, &move, &mp.undo);
