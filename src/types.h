@@ -5,6 +5,7 @@ typedef unsigned long long Key;
 
 #define max(a, b) (((a) > (b)) ? a : b)
 #define min(a, b) (((a) < (b)) ? a : b)
+#define clamp(a, b, c) (min((a), max((b), (c))))
 
 enum Square {
     A1, B1, C1, D1, E1, F1, G1, H1,

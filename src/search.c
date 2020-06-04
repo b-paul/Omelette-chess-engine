@@ -128,7 +128,6 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int score,bestScore=-999999;
     int movecnt = 0;
-    int searchPV = 1;
     Move move, bestMove;
 
     // PVS sets alpha to beta-1 on
@@ -203,17 +202,18 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         R = 0;
 
         // LMR
-        if (!PVNode &&
-            depth > 2 &&
+        if (depth > 2 &&
             movecnt > 2) {
             R = reductionTable[min(depth, 63)][min(movecnt, 63)];
 
             R += isQuiet;
 
-            score = -alphaBeta(board, -alpha-1, -alpha, depth-R-1, height+1, thread, &lastPv);
+            int RDepth = clamp(depth-R-1, 1, depth-1);
+
+            score = -alphaBeta(board, -alpha-1, -alpha, RDepth, height+1, thread, &lastPv);
         }
 
-        if ((R && score > alpha) || (!R && movecnt > 1)) {
+        if ((R && score > alpha) || (!R && (movecnt > 1 || !PVNode))) {
             score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
@@ -226,9 +226,6 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         if (score > bestScore) {
             bestScore = score;
             bestMove = move;
-
-            searchPV = 0;
-
 
             if (score > alpha) {
                 alpha = score;
