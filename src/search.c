@@ -234,11 +234,9 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             if (score > alpha) {
                 alpha = score;
 
-                if (PVNode) {
-                    pv->length = lastPv.length + 1;
-                    pv->pv[0] = move;
-                    memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
-                }
+                pv->length = lastPv.length + 1;
+                pv->pv[0] = move;
+                memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
 
                 if (alpha >= beta) {
                     updateHistoryScores(thread->hTable, board, &bestMove, depth, height);
