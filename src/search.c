@@ -139,7 +139,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     int eval = evaluate(board);
 
     int isQuiet;
-    int R;
+    int R, didLMR;
 
     int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
 
@@ -211,9 +211,13 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             int RDepth = clamp(depth-R-1, 1, depth-1);
 
             score = -alphaBeta(board, -alpha-1, -alpha, RDepth, height+1, thread, &lastPv);
+
+            didLMR = 1;
+        } else {
+            didLMR = 0;
         }
 
-        if ((R && score > alpha) || (!R && (movecnt > 1 || !PVNode))) {
+        if ((didLMR && score > alpha) || (!didLMR && (movecnt > 1 || !PVNode))) {
             score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
