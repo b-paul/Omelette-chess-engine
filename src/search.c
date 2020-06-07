@@ -217,7 +217,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
-        if (PVNode && (score > alpha || (RootNode && movecnt==1))) {
+        if (PVNode && ((score > alpha && score < beta) || movecnt == 1)) {
             score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
