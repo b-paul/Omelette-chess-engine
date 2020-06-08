@@ -231,12 +231,15 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             bestScore = score;
             bestMove = move;
 
-            if (score > alpha) {
-                alpha = score;
-
+            // Weiss logic
+            if ((score > alpha && PVNode) || (RootNode && movecnt == 1)) {
                 pv->length = lastPv.length + 1;
                 pv->pv[0] = move;
                 memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
+            }
+
+            if (score > alpha) {
+                alpha = score;
 
                 if (alpha >= beta) {
                     updateHistoryScores(thread->hTable, board, &bestMove, depth, height);
