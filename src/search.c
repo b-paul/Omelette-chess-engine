@@ -271,7 +271,7 @@ void *startSearch(void *args) {
         if (setjmp(thread->jumpEnv)) break;
         PrincipalVariation pv;
 
-        delta = 24;
+        delta = 14;
 
         // We expect that our score will be
         // close to the score we got in the
