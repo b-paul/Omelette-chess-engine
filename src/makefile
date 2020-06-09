@@ -10,7 +10,7 @@ DEBUGFLAGS = -std=gnu11 -Wall -O0
 OBJ = attacks.o bitboards.o evaluate.o main.o movegen.o movepicker.o position.o search.o threads.o tt.o uci.o
 
 $(EXE): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) -lm
 
 $(DEBUGEXE): $(OBJ)
 	$(CC) $(DEBUGFLAGS) -o $@ $(OBJ)
