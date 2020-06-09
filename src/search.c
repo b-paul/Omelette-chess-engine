@@ -139,7 +139,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     int eval = evaluate(board);
 
     int isQuiet;
-    int R;
+    int R, didLMR;
 
     int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
 
@@ -211,13 +211,17 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             int RDepth = clamp(depth-R-1, 1, depth-1);
 
             score = -alphaBeta(board, -alpha-1, -alpha, RDepth, height+1, thread, &lastPv);
+
+            didLMR = 1;
+        } else {
+            didLMR = 0;
         }
 
-        if ((R && score > alpha) || (!R && (movecnt > 1 || !PVNode))) {
+        if ((didLMR && score > alpha) || (!didLMR && (movecnt > 1 || !PVNode))) {
             score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
-        if (PVNode && (score > alpha || (RootNode && movecnt==1))) {
+        if (PVNode && ((score > alpha && score < beta) || movecnt == 1)) {
             score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
@@ -227,14 +231,15 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             bestScore = score;
             bestMove = move;
 
+            // Weiss logic
+            if ((score > alpha && PVNode) || (RootNode && movecnt == 1)) {
+                pv->length = lastPv.length + 1;
+                pv->pv[0] = move;
+                memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
+            }
+
             if (score > alpha) {
                 alpha = score;
-
-                if (PVNode) {
-                    pv->length = lastPv.length + 1;
-                    pv->pv[0] = move;
-                    memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
-                }
 
                 if (alpha >= beta) {
                     updateHistoryScores(thread->hTable, board, &bestMove, depth, height);
@@ -266,7 +271,7 @@ void *startSearch(void *args) {
         if (setjmp(thread->jumpEnv)) break;
         PrincipalVariation pv;
 
-        delta = 24;
+        delta = 14;
 
         // We expect that our score will be
         // close to the score we got in the
