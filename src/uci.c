@@ -20,10 +20,10 @@ const char* startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 
 
 extern volatile int STOP_SEARCH;
 
-extern Key zobristPieces[PIECE_CNT][SQ_CNT];
-extern Key zobristEnPas[8];
-extern Key zobristCastle[15];
-extern Key zobristTurn;
+Key zobristPieces[SQ_CNT][PIECE_CNT];
+Key zobristEnPas[8];
+Key zobristCastle[15];
+Key zobristTurn;
 
 void parseFen(const char* fen, Pos* board) {
 
@@ -46,6 +46,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[BLACK], flipSq(square));
                 board->pieceList[flipSq(square)] = bK;
                 board->hash ^= zobristPieces[bK][flipSq(square)];
+                placePSQT(board, bK, square);
                 square--;
                 break;
 
@@ -54,6 +55,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[BLACK], flipSq(square));
                 board->pieceList[flipSq(square)] = bQ;
                 board->hash ^= zobristPieces[bQ][flipSq(square)];
+                placePSQT(board, bQ, square);
                 square--;
                 break;
 
@@ -62,6 +64,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[BLACK], flipSq(square));
                 board->pieceList[flipSq(square)] = bR;
                 board->hash ^= zobristPieces[bR][flipSq(square)];
+                placePSQT(board, bR, square);
                 square--;
                 break;
 
@@ -70,6 +73,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[BLACK], flipSq(square));
                 board->pieceList[flipSq(square)] = bB;
                 board->hash ^= zobristPieces[bB][flipSq(square)];
+                placePSQT(board, bB, square);
                 square--;
                 break;
 
@@ -78,6 +82,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[BLACK], flipSq(square));
                 board->pieceList[flipSq(square)] = bN;
                 board->hash ^= zobristPieces[bN][flipSq(square)];
+                placePSQT(board, bN, square);
                 square--;
                 break;
 
@@ -86,6 +91,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[BLACK], flipSq(square));
                 board->pieceList[flipSq(square)] = bP;
                 board->hash ^= zobristPieces[bP][flipSq(square)];
+                placePSQT(board, bP, square);
                 square--;
                 break;
 
@@ -94,6 +100,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[WHITE], flipSq(square));
                 board->pieceList[flipSq(square)] = wK;
                 board->hash ^= zobristPieces[wK][flipSq(square)];
+                placePSQT(board, wK, square);
                 square--;
                 break;
 
@@ -102,6 +109,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[WHITE], flipSq(square));
                 board->pieceList[flipSq(square)] = wQ;
                 board->hash ^= zobristPieces[wQ][flipSq(square)];
+                placePSQT(board, wQ, square);
                 square--;
                 break;
 
@@ -110,6 +118,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[WHITE], flipSq(square));
                 board->pieceList[flipSq(square)] = wR;
                 board->hash ^= zobristPieces[wR][flipSq(square)];
+                placePSQT(board, wR, square);
                 square--;
                 break;
 
@@ -118,6 +127,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[WHITE], flipSq(square));
                 board->pieceList[flipSq(square)] = wB;
                 board->hash ^= zobristPieces[wB][flipSq(square)];
+                placePSQT(board, wB, square);
                 square--;
                 break;
 
@@ -126,6 +136,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[WHITE], flipSq(square));
                 board->pieceList[flipSq(square)] = wN;
                 board->hash ^= zobristPieces[wN][flipSq(square)];
+                placePSQT(board, wN, square);
                 square--;
                 break;
 
@@ -134,6 +145,7 @@ void parseFen(const char* fen, Pos* board) {
                 setBit(&board->sides[WHITE], flipSq(square));
                 board->pieceList[flipSq(square)] = wP;
                 board->hash ^= zobristPieces[wP][flipSq(square)];
+                placePSQT(board, wP, square);
                 square--;
                 break;
 
@@ -465,6 +477,8 @@ void bench(int argc, char **argv) {
     for (int i = 0; strcmp(BenchFENs[i], ""); i++) {
         resetBoard(&board);
         parseFen(BenchFENs[i], &board);
+
+        printf("PSQT: %d\n", mgS(board.psqtScore));
 
         initThreadSearch(threads, board, info);
         printf("Position %d: %s\n", i+1, BenchFENs[i]);

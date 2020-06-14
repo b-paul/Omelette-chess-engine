@@ -1,12 +1,7 @@
 #include "bitboards.h"
+#include "evaluate.h"
 #include "position.h"
 #include "types.h"
-
-#include <stdint.h>
-
-#define S(mg, eg) ((int)((unsigned int)(eg) << 16) + mg)
-#define mgS(mg) ((int16_t)((uint16_t)((unsigned)(mg) & 0xFFFF)))
-#define egS(eg) ((int16_t)((uint16_t)(((unsigned)(eg) + 0x8000)>>16)))
 
 int materialBonus[PIECE_CNT] = {
     0,
@@ -14,7 +9,8 @@ int materialBonus[PIECE_CNT] = {
     S(300, 250), // Knights
     S(325, 400), // Bishops
     S(500, 600), // Rooks
-    S(900, 1100) // Queens
+    S(900, 1100),// Queens
+    S(0,0)       // King
 };
 
 int PSQTBonus[PIECE_CNT][RANK_CNT][FILE_CNT/2] = {
@@ -76,17 +72,30 @@ int PSQTBonus[PIECE_CNT][RANK_CNT][FILE_CNT/2] = {
     }, 
 };
 
+int PSQT[PIECE_CNT][SQ_CNT];
+
 int bishopPairBonus = S(20, 50);
 
 void initEval() {
     // Add the material bonus to
     // each psqt square
-    for (int i = 1; i < PIECE_TYPE_CNT; i++) {
-        for (int j = 0; j < 8; j++) {
-            for (int k = 0; k < 4; k++) {
-                PSQTBonus[i][j][k] += materialBonus[i];
-            }
-        }
+    for (int i = 0; i < SQ_CNT; i++) {
+        int r = rank(i);
+        int f = (file(i)>3 ? 7-file(i) : file(i));
+
+        PSQT[wP][i] = materialBonus[PAWN] + PSQTBonus[PAWN][r][f];
+        PSQT[wN][i] = materialBonus[KNIGHT] + PSQTBonus[KNIGHT][r][f];
+        PSQT[wB][i] = materialBonus[BISHOP] + PSQTBonus[BISHOP][r][f];
+        PSQT[wR][i] = materialBonus[ROOK] + PSQTBonus[ROOK][r][f];
+        PSQT[wQ][i] = materialBonus[QUEEN] + PSQTBonus[QUEEN][r][f];
+        PSQT[wK][i] = materialBonus[KING] + PSQTBonus[KING][r][f];
+
+        PSQT[bP][i] = -materialBonus[PAWN] - PSQTBonus[PAWN][7-r][f];
+        PSQT[bN][i] = -materialBonus[KNIGHT] - PSQTBonus[KNIGHT][7-r][f];
+        PSQT[bB][i] = -materialBonus[BISHOP] - PSQTBonus[BISHOP][7-r][f];
+        PSQT[bR][i] = -materialBonus[ROOK] - PSQTBonus[ROOK][7-r][f];
+        PSQT[bQ][i] = -materialBonus[QUEEN] - PSQTBonus[QUEEN][7-r][f];
+        PSQT[bK][i] = -materialBonus[KING] - PSQTBonus[KING][7-r][f];
     }
 }
 
@@ -97,12 +106,12 @@ int PSQTEval(Pos board) {
 
     while (board.sides[WHITE]) {
         sq = poplsb(&board.sides[WHITE]);
-        result += PSQTBonus[board.pieceList[sq]][rank(sq)][(file(sq)>3 ? 7-file(sq) : file(sq))];
+        result += PSQT[board.pieceList[sq]][sq];
     }
     
     while (board.sides[BLACK]) {
         sq = poplsb(&board.sides[BLACK]);
-        result -= PSQTBonus[pieceType(board.pieceList[sq])][7-rank(sq)][(file(sq)>3 ? 7-file(sq) : file(sq))];
+        result += PSQT[board.pieceList[sq]][sq];
     }
 
     return result;
@@ -123,7 +132,8 @@ int evaluate(Pos *board) {
 
     int result = 0;
 
-    result += PSQTEval(*board);
+    //result += PSQTEval(*board);
+    result += board->psqtScore;
 
     int p = phase(board);
     int mg = mgS(result);

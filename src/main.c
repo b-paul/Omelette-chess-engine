@@ -21,6 +21,8 @@ int main(int argc, char **argv) {
     initSearch();
     initZobrist();
 
+    printf("%d\n", mgS(PSQT[3][42]));
+
     // Check for a bench used in
     // OpenBench
     if (argc > 1 && strstr(argv[1], "bench") == argv[1]) {

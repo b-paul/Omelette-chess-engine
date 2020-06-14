@@ -2,6 +2,7 @@
 
 #include "attacks.h"
 #include "bitboards.h"
+#include "evaluate.h"
 #include "movegen.h"
 #include "position.h"
 #include "types.h"
@@ -43,6 +44,8 @@ struct Pos {
 
     // Zobrist hash key of the position
     Key hash;
+
+    int psqtScore;
 };
 
 struct Undo {
@@ -50,6 +53,7 @@ struct Undo {
     Key lastHash;
     int lastCastle;
     int lastFiftyRule;
+    int lastPSQT;
 };
 
 // Is check
@@ -126,4 +130,12 @@ static inline int moveIsTactical(Move *move, Pos *board) {
     return board->pieceList[to] != NONE ||
            moveType(move) == ENPAS ||
            promotePiece(move);
+}
+
+static inline void placePSQT(Pos *board, int piece, int sq) {
+    board->psqtScore += PSQT[piece][sq];
+}
+
+static inline void removePSQT(Pos *board, int piece, int sq) {
+    board->psqtScore -= PSQT[piece][sq];
 }
