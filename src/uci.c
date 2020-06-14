@@ -478,8 +478,6 @@ void bench(int argc, char **argv) {
         resetBoard(&board);
         parseFen(BenchFENs[i], &board);
 
-        printf("PSQT: %d\n", mgS(board.psqtScore));
-
         initThreadSearch(threads, board, info);
         printf("Position %d: %s\n", i+1, BenchFENs[i]);
 
