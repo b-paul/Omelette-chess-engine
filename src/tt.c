@@ -46,11 +46,13 @@ void initTT(tTable *table, int size) {
 }
 
 void addEntry(ttEntry *entry, Key key, Move *move, int depth, int eval, int type) {
-    entry->key = key;
-    entry->move = *move;
-    entry->depth = depth;
-    entry->eval = eval;
-    entry->type = type;
+    if (key != entry->key || depth >= entry->depth) {
+        entry->key = key;
+        entry->move = *move;
+        entry->depth = depth;
+        entry->eval = eval;
+        entry->type = type;
+    }
 }
 
 ttEntry *probeTT(tTable *tt, Key key, int *isReplaced) {
