@@ -647,7 +647,7 @@ void reportSearchInfo(Thread *threads) {
     
     printf("info depth %d seldepth %d nodes %lu nps %lu pv", threads[0].depth, threads[0].seldepth, nodes, nps);
 
-    for (int i = 0; i < threads[0].pv.length-1; i++) {
+    for (int i = 0; i < threads[0].pv.length; i++) {
         moveToStr(threads[0].pv.pv[i], threads[0].board, moveStr);
 
         printf(" %s", moveStr);

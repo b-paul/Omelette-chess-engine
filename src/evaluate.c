@@ -99,24 +99,6 @@ void initEval() {
     }
 }
 
-int PSQTEval(Pos board) {
-    int result = 0;
-
-    int sq;
-
-    while (board.sides[WHITE]) {
-        sq = poplsb(&board.sides[WHITE]);
-        result += PSQT[board.pieceList[sq]][sq];
-    }
-    
-    while (board.sides[BLACK]) {
-        sq = poplsb(&board.sides[BLACK]);
-        result += PSQT[board.pieceList[sq]][sq];
-    }
-
-    return result;
-}
-
 int phase(Pos *board) {
     int p = 24;
     p -= popcnt(board->pieces[KNIGHT] | board->pieces[BISHOP]);
@@ -132,7 +114,6 @@ int evaluate(Pos *board) {
 
     int result = 0;
 
-    //result += PSQTEval(*board);
     result += board->psqtScore;
 
     int p = phase(board);

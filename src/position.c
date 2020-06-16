@@ -342,8 +342,6 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
 
         assert(pieceType(piece) != PAWN);
 
-        board->psqtScore -= PSQT[piece][to];
-
         int promote = promotePiece(move);
         
         piece -= (promote - 1);
