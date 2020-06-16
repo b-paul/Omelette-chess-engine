@@ -195,9 +195,9 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
         movecnt++;
 
-        if (RootNode && thread->index == 0) {
-            reportMoveInfo(move, *board, movecnt);
-        }
+//        if (RootNode && thread->index == 0) {
+//            reportMoveInfo(move, *board, movecnt);
+//        }
 
         R = 0;
 

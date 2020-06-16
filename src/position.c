@@ -85,6 +85,7 @@ void resetBoard(Pos* board) {
     board->enPas = NO_SQ;
     board->fiftyMoveRule = 0;
     board->plyLength = 0;
+    board->psqtScore = 0;
 }
 
 void printBoard(Pos board) {
@@ -195,14 +196,17 @@ int makeMove(Pos* board, Move *move) {
 
         int rookTo = sq((to > from) ? 5 : 3, rank(to));
         int rookFrom = sq((to > from) ? 7 : 0, rank(to));
+        int rookPiece = (board->turn) ? bR : wR;
         Bitboard rToFrom = (1ULL << rookTo) | (1ULL << rookFrom);
 
         board->pieces[ROOK] ^= rToFrom;
         board->sides[board->turn] ^= rToFrom;
         board->pieceList[rookFrom] = NONE;
-        board->pieceList[rookTo] = (board->turn) ? bR : wR;
+        board->pieceList[rookTo] = rookPiece;
         board->hash ^= zobristPieces[rookFrom][board->pieceList[rookFrom]];
         board->hash ^= zobristPieces[rookTo][board->pieceList[rookTo]];
+        board->psqtScore -= PSQT[rookPiece][rookFrom];
+        board->psqtScore += PSQT[rookPiece][rookTo];
 
     } else if (moveType(move) == PROMOTE) {
 
@@ -210,13 +214,15 @@ int makeMove(Pos* board, Move *move) {
 
         int promote = promotePiece(move);
 
-        board->hash ^= zobristPieces[to][piece];
+        board->hash ^= zobristPieces[from][piece];
+        board->psqtScore -= PSQT[piece][from];
 
         piece += promote - 1;
 
         board->pieces[PAWN] ^= frombb;
         board->pieces[promote] ^= frombb;
-        board->hash ^= zobristPieces[to][piece];
+        board->hash ^= zobristPieces[from][piece];
+        board->psqtScore += PSQT[piece][from];
     }
 
     if (board->castlePerms && (castleBitMasks[to] | castleBitMasks[from])) { 
@@ -242,21 +248,22 @@ int makeMove(Pos* board, Move *move) {
         board->sides[!board->turn] ^= cap;
         move->lastCapture = board->pieceList[capSq]; 
         board->pieceList[capSq] = NONE;
+        board->psqtScore -= PSQT[move->lastCapture][capSq];
     } else if (board->pieceList[to] != NONE) {
 
         // Cant capture our own piece
         assert(((board->pieceList[to] >> 3) & 1) != board->turn);
 
         Bitboard cap = 1ULL << to;
-        int capturedPiece = board->pieceList[to];
 
         move->lastCapture = board->pieceList[to];
         
-        assert(pieceType(capturedPiece) != KING);
+        assert(pieceType(move->lastCapture) != KING);
 
-        board->pieces[pieceType(capturedPiece)] ^= cap;
+        board->pieces[pieceType(move->lastCapture)] ^= cap;
         board->sides[!board->turn] ^= cap;
-        board->hash ^= zobristPieces[to][capturedPiece];
+        board->hash ^= zobristPieces[to][move->lastCapture];
+        board->psqtScore -= PSQT[move->lastCapture][to];
 
         board->fiftyMoveRule = 0;
 
@@ -275,6 +282,8 @@ int makeMove(Pos* board, Move *move) {
     board->pieceList[to] = piece;
     board->hash ^= zobristPieces[from][piece];
     board->hash ^= zobristPieces[to][piece];
+    board->psqtScore -= PSQT[piece][from];
+    board->psqtScore += PSQT[piece][to];
 
     board->turn = !board->turn;
     board->hash ^= zobristTurn;
@@ -303,6 +312,7 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
     board->hash = undo->lastHash;
     board->castlePerms = undo->lastCastle;
     board->fiftyMoveRule = undo->lastFiftyRule;
+    board->psqtScore = undo->lastPSQT;
 
     board->plyLength--;
 
@@ -320,11 +330,12 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
 
         int rookTo = sq((to > from) ? 5 : 3, rank(to));
         int rookFrom = sq((to > from) ? 7 : 0, rank(to));
+        int rookPiece = (board->turn) ? bR : wR;
         Bitboard rToFrom = (1ULL << rookTo) | (1ULL << rookFrom);
 
         board->pieces[ROOK] ^= rToFrom;
         board->sides[board->turn] ^= rToFrom;
-        board->pieceList[rookFrom] = (board->turn) ? bR : wR;
+        board->pieceList[rookFrom] = rookPiece;
         board->pieceList[rookTo] = NONE;
 
     } else if (moveType(move) == PROMOTE) {
@@ -349,8 +360,8 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
 
         int pushDir = (board->turn) ? 8 : -8;
         Bitboard epBB = shift(tobb, pushDir); 
-        int epSq = to + pushDir;
-        board->pieceList[epSq] = move->lastCapture;
+        int capSq = to + pushDir;
+        board->pieceList[capSq] = move->lastCapture;
         board->pieces[PAWN] ^= epBB;
         board->sides[!board->turn] ^= epBB;
         board->pieceList[to] = NONE;
