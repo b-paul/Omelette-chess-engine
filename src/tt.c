@@ -46,15 +46,16 @@ void initTT(tTable *table, int size) {
 }
 
 void addEntry(ttEntry *entry, Key key, Move *move, int depth, int eval, int type) {
-    entry->key = key;
-    entry->move = *move;
-    entry->depth = depth;
-    entry->eval = eval;
-    entry->type = type;
+    if (key != entry->key || depth >= entry->depth) {
+        entry->key = key;
+        entry->move = *move;
+        entry->depth = depth;
+        entry->eval = eval;
+        entry->type = type;
+    }
 }
 
 ttEntry *probeTT(tTable *tt, Key key, int *isReplaced) {
-    *isReplaced = 1;
 
     // We pretty much will never have
     // tt entryCount > key even with
@@ -62,34 +63,9 @@ ttEntry *probeTT(tTable *tt, Key key, int *isReplaced) {
     // its memory
     int i = key % tt->entryCount;
 
-    if (tt->table[i].key == key) {
-        return &tt->table[i];
-    }
+    ttEntry *entry = &tt->table[i];
 
-    *isReplaced = 0;
-
-    // We did not find an entry with our
-    // key, to we will pick an empty or
-    // replace another entry
-
-    ttEntry *entry = NULL;
-
-    for (i = 0; i < tt->entryCount; i++) {
-        if (tt->table[i].key == 0) {
-            entry = &tt->table[i];
-            break;
-        }
-        if (tt->table[i].age < tt->curAge) {
-            entry = &tt->table[i];
-            break;
-        }
-    }
-
-    if (entry == NULL) {
-        // bad approach that
-        // should be fixed
-        entry = &tt->table[0];
-    }
+    *isReplaced = entry->key == key;
 
     return entry;
 }
