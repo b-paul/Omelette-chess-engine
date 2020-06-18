@@ -22,6 +22,7 @@ static const Bitboard Rank2 = 0xFF00;
 static const Bitboard Rank4 = 0xFF000000;
 static const Bitboard Rank5 = 0xFF00000000;
 static const Bitboard Rank7 = 0xFF000000000000;
+static const Bitboard Rank8 = 0xFF00000000000000;
 static const Bitboard FileA = 0x0101010101010101;
 
 // Used to find pawn and king attacks
