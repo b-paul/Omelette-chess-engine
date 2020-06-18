@@ -133,93 +133,91 @@ static inline int moveIsTactical(Move *move, Pos *board) {
 }
 
 static inline int moveIsPseudolegal(Move *move, Pos *board) {
-    if (move->value == NO_MOVE) return false;
+    if (move->value == NO_MOVE) return 0;
 
     int from = moveFrom(move);
     int to = moveTo(move);
     int piece = board->pieceList[to];
 
-    if (piece == NONE) return false;
+    if (piece == NONE) return 0;
 
     if (!(board->sides[board->turn] & (1ULL << from)) || 
         (board->sides[board->turn] & (1ULL << to)))
-        return false;
+        return 0;
 
     if (moveType(move) == CASTLE) {
         int castle;
-	switch (to) {
-	    case C1:
-	        castle = CAN_WHITE_QUEEN;
-	        break;
-    	    case G1:
-    	        castle = CAN_WHITE_KING;
-    	        break;
-	    case C8:
-	        castle = CAN_BLACK_QUEEN;
-	        break;
-	    case G8:
-	        castle = CAN_BLACK_KING;
-	        break;
-	    default:
-	        assert(!CASTLE);
-	        return 0;
-	}
-	if (!(board->castlePerms & castle)) return false;
+        switch (to) {
+            case C1:
+                castle = CAN_WHITE_QUEEN;
+                break;
+            case G1:
+                castle = CAN_WHITE_KING;
+                break;
+            case C8:
+                castle = CAN_BLACK_QUEEN;
+                break;
+            case G8:
+                castle = CAN_BLACK_KING;
+                break;
+            default:
+                assert(!CASTLE);
+                return 0;
+        }
+        if (!(board->castlePerms & castle)) return 0;
 
-	Bitboard occ = board->sides[WHITE] & board->sides[BLACK];
+        Bitboard occ = board->sides[WHITE] & board->sides[BLACK];
 
-	Bitboard blockingPath = castlePath[castle];
+        Bitboard blockingPath = castlePath[castle];
 
-	return !(occ & blockingPath) &&
-	       castlePathAttacked(board, blockingPath);
+        return !(occ & blockingPath) &&
+            castlePathAttacked(board, blockingPath);
     }
 
     if (pieceType(piece) == PAWN) {
         if (moveType(move) == ENPAS) {
-	    return board->enPas == to &&
-	           getPawnAttacks(from, board->turn); 
-	}
+            return board->enPas == to &&
+                getPawnAttacks(from, board->turn); 
+        }
 
-	if (moveType(move) == PROMOTE) {
-	    Bitboard rank8th = (board->turn ? Rank8 : Rank1);
-	    return (1ULL << to) & rank8th;
-	}
+        if (moveType(move) == PROMOTE) {
+            Bitboard rank8th = (board->turn ? Rank8 : Rank1);
+            return (1ULL << to) & rank8th;
+        }
 
-	// Doublepush
-	if (abs(to-from) == 16) {
-	    Bitboard rank4th = (board->turn ? Rank5 : Rank4);
-	    return (1ULL << to) & rank4th && board->pieceList[to] == NONE;
-	}
+        // Doublepush
+         if (abs(to-from) == 16) {
+             Bitboard rank4th = (board->turn ? Rank5 : Rank4);
+             return (1ULL << to) & rank4th && board->pieceList[to] == NONE;
+        }
 
-	return (abs(to-from) == 8) ? true : (1ULL << to) & getPawnAttacks(from, board->turn);
+        return (abs(to-from) == 8) ? true : (1ULL << to) & getPawnAttacks(from, board->turn);
     } else {
         Bitboard legalAttack;
-	Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
-	switch (pieceType(piece)) {
-	    case KNIGHT:
-	        legalAttack = (1ULL << to) & getKnightAttacks(to);
-		break;
+        Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
+        switch (pieceType(piece)) {
+            case KNIGHT:
+                legalAttack = (1ULL << to) & getKnightAttacks(to);
+                break;
             case BISHOP:
-		legalAttack = (1ULL << to) & getBishopAttacks(to, occ);
-		break;
+                legalAttack = (1ULL << to) & getBishopAttacks(to, occ);
+                break;
             case ROOK:
-		legalAttack = (1ULL << to) & getRookAttacks(to, occ);
-		break;
+                legalAttack = (1ULL << to) & getRookAttacks(to, occ);
+                break;
             case QUEEN:
-		legalAttack = (1ULL << to) & getQueenAttacks(to, occ);
-		break;
+                legalAttack = (1ULL << to) & getQueenAttacks(to, occ);
+                break;
             case KING:
-		legalAttack = (1ULL << to) & getKingAttacks(to);
-		break;
-	}
+                legalAttack = (1ULL << to) & getKingAttacks(to);
+                break;
+        }
         return !moveType(move) && legalAttack;
     }
 }
-
 static inline void placePSQT(Pos *board, int piece, int sq) {
     board->psqtScore += PSQT[piece][sq];
 }
-
 static inline void removePSQT(Pos *board, int piece, int sq) {
     board->psqtScore -= PSQT[piece][sq];
 }

@@ -56,7 +56,7 @@ void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, int height) {
 
     Move noMove;
     noMove.value = NO_MOVE;
-    mp->ttMove = (moveIsPseudolegal(ttMove, board) ? *ttMove : noMove);
+    mp->ttMove = (!moveIsPseudolegal(ttMove, board) ? *ttMove : noMove);
 }
 
 int nextMoveIndex(MoveList *moves, int index) {
