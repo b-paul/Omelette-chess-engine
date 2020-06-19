@@ -413,7 +413,8 @@ void *go(void *args) {
     info.nodes = 0;
     info.maxDepth = maxDepth;
     info.startTime = getTime();
-    info.time = (movetime != -1 ? movetime : (board.turn ? (btime/movestogo) : (wtime/movestogo))); // change this later
+    int time = (board.turn == WHITE ? wtime : btime);
+    info.time = initTimeManagement(&board, time, max(movestogo, 2));
 
     initThreadSearch(threads, board, info);
     
