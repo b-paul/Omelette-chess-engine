@@ -142,6 +142,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     int R, didLMR;
 
     int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
+    depth += inCheck;
 
     MovePicker mp;
 
