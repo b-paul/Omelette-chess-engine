@@ -55,7 +55,7 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
     thread->nodes++;
     if (height > thread->seldepth) thread->seldepth = height;
 
-    if (STOP_SEARCH || timeLeft(thread) <= 0) longjmp(thread->jumpEnv, 1);
+    if (STOP_SEARCH || stopSearch(thread)) longjmp(thread->jumpEnv, 1);
 
     int standPat = evaluate(board);
 
@@ -117,7 +117,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     thread->nodes++;
     if (height > thread->seldepth) thread->seldepth = height;
 
-    if (STOP_SEARCH || timeLeft(thread) <= 0) longjmp(thread->jumpEnv, 1);
+    if (STOP_SEARCH || stopSearch(thread)) longjmp(thread->jumpEnv, 1);
 
     // check for draws
     if (isDrawn(board, height)) return 0;
@@ -307,9 +307,15 @@ void *startSearch(void *args) {
             continue;
         }
 
+        updateTimeManagement(thread);
+
         reportSearchInfo(thread->threads);
 
     }
+
+    // So that we dont report an incomplete depth
+    // we will decrease it before reporting
+    thread->depth--;
 
     if (masterThread) reportSearchInfo(thread->threads);
 
