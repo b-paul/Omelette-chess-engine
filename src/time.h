@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 extern int initTimeManagement(Pos *board, int time, int movesLeft);
+extern void updateTimeManagement(Thread *thread);
 
 static inline int legalMoveCount(Pos *board) {
     return perft(board, 1, 0);

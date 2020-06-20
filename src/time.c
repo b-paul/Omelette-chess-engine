@@ -16,4 +16,17 @@ int initTimeManagement(Pos *board, int time, int movesLeft) {
 }
 
 void updateTimeManagement(Thread *thread) {
+    // We have found mate, so stop searching
+    if (abs(thread->score) >= 997951) {
+        thread->maxTime = 0;
+        return;
+    }
+    // If there is not enough time to search
+    // the next depth, stop
+    // We assume that we cannot search the next
+    // depth if we have used 50% of the search time
+    if (timeSearched(thread) > (thread->maxTime / 2)) {
+        thread->maxTime = 0;
+        return;
+    }
 }
