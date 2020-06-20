@@ -4,7 +4,7 @@
 #include "types.h"
 
 int initTimeManagement(Pos *board, int time, int movesLeft) {
-    int moveCnt = min(legalMoveCount(board), 5);
+    int moveCnt = legalMoveCount(board);
 
     // If there is only 1 legal move, or no moves
     // then there is no reason to search the position
@@ -12,7 +12,7 @@ int initTimeManagement(Pos *board, int time, int movesLeft) {
         return 0;
     }
 
-    return (time*moveCnt*moveCnt)/(movesLeft*25);
+    return time/movesLeft;
 }
 
 void updateTimeManagement(Thread *thread) {
