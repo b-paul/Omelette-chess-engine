@@ -168,7 +168,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
  
     if (!PVNode &&
         depth < 6 &&
-        eval - futilityMargin >= beta)
+        eval - (futilityMargin * (depth))>= beta)
         return eval - futilityMargin;
 
     // Null move pruning
