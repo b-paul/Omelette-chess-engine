@@ -14,7 +14,7 @@
 
 volatile int STOP_SEARCH = 0;
 
-int futilityMargin = 300;
+int futilityMargin = 230;
 
 Bitboard perft(Pos *board, int depth, int isRoot) {
     if (depth == 0) return 1;
@@ -163,6 +163,13 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         hashEntry->depth >= depth) {
         return ttEval;
     }
+    
+    // Reverse futility pruning
+ 
+    if (!PVNode &&
+        depth < 6 &&
+        eval - futilityMargin >= beta)
+        return eval - futilityMargin;
 
     // Null move pruning
     if (!PVNode &&
