@@ -9,6 +9,7 @@
 #include "time.h"
 #include "types.h"
 #include "uci.h"
+#include "fathom/tbprobe.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -428,12 +429,17 @@ void *go(void *args) {
 }
 
 void setOption(char *str, Thread **threads, tTable *tt, HistoryTable *hTable) {
-
+    str[strcspn(str, "\r\n")] = '\0';
     if (strstr(str, "setoption name Threads value") == str) {
         free(*threads);
         *threads = initThreads(atoi(str + 28), tt, hTable);
     } else if (strstr(str, "setoption name Hash value") == str) {
         initTT(tt, atoi(str + 25));
+    } else if (strstr(str, "setoption name SyzygyPath value") == str) {
+        printf("%s\n", str+32);
+        tb_init(str + 32);
+        TB_LARGEST ? printf("Syzygy Tablebase initialization success - largest found: %d\n", TB_LARGEST) :
+                     printf("Sysygy Tablebase initialization failed");
     }
 }
 
@@ -536,6 +542,7 @@ void uciLoop() {
             printf("id author Benjamin Paul\n");
             printf("option name Threads type spin default 1 min 1 max 512\n");
             printf("option name Hash type spin default 1 min 1 max 65536\n");
+            printf("option name SyzygyPath type string default <empty>\n");
             printf("uciok\n");
         } else if (strcmp(str, "isready\n") == 0) {
             printf("readyok\n");
@@ -636,17 +643,18 @@ void uciLoop() {
 
 
 void reportSearchInfo(Thread *threads) {
-    long nodes = 0;
+    long nodes = 0, tbHits = 0;
     char moveStr[6];
 
     for (int i = 0; i < threads->threadCount; i++) {
         nodes += threads[i].nodes;
+        tbHits += threads[i].tbHits;
     }
 
     int curTime = getTime();
     long nps = nodes*1000/(curTime - threads[0].startTime+1);
     
-    printf("info depth %d seldepth %d nodes %lu nps %lu pv", threads[0].depth, threads[0].seldepth, nodes, nps);
+    printf("info depth %d seldepth %d nodes %lu nps %lu tbhits %lu pv", threads[0].depth, threads[0].seldepth, nodes, nps, tbHits);
 
     for (int i = 0; i < threads[0].pv.length; i++) {
         moveToStr(threads[0].pv.pv[i], threads[0].board, moveStr);

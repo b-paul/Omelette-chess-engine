@@ -14,6 +14,7 @@ struct Thread {
     int seldepth;
     Pos board;
     int nodes;
+    int tbHits;
     int startTime;
     int maxTime;
     int maxDepth;

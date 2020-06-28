@@ -7,6 +7,7 @@
 #include "tt.h"
 #include "types.h"
 #include "uci.h"
+#include "fathom/tbprobe.h"
 
 #include <math.h>
 #include <pthread.h>
@@ -162,6 +163,30 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         isReplaced &&
         hashEntry->depth >= depth) {
         return ttEval;
+    }
+
+    // Syzygy tablebase probing
+    unsigned entry;
+    if (!RootNode &&
+        (entry = probeSyzygyWDL(board)) != TB_RESULT_FAILED) {
+
+        thread->tbHits++;
+
+        score = entry == TB_LOSS ? -WDL_WIN + height :
+                    entry == TB_WIN ? WDL_WIN - height :
+                    0;
+
+        int bound = entry == TB_LOSS ? UPPER :
+                    entry == TB_WIN ? LOWER :
+                    EXACT;
+
+        if  (bound == EXACT ||
+            (bound == LOWER && score >= beta) ||
+            (bound == UPPER && score <= alpha)) {
+            ttMove.value = NO_MOVE;
+            addEntry(hashEntry, board->hash, &ttMove, depth, score, bound);
+            return score;
+        }
     }
     
     // Reverse futility pruning

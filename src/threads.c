@@ -25,6 +25,7 @@ Thread *initThreads(int threadCount, tTable *tt, HistoryTable *hTable) {
 void initThreadSearch(Thread *threads, Pos board, Search info) {
     for (int i = 0; i < threads[0].threadCount; i++) {
         threads[i].nodes = 0;
+        threads[i].tbHits = 0;
         threads[i].seldepth = 0;
         threads[i].board = board;
 

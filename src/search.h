@@ -1,6 +1,8 @@
 #pragma once
 
+#include "position.h"
 #include "types.h"
+#include "fathom/tbprobe.h"
 
 struct PrincipalVariation {
     Move pv[256];
@@ -23,3 +25,21 @@ struct Search {
 Bitboard perft(Pos *board, int depth, int isRoot);
 void initSearch();
 Move getBestMove(Pos board, Thread *threads);
+
+static inline unsigned probeSyzygyWDL(Pos *board) {
+
+    if (//board->enPas ||
+        //board->castlePerms ||
+        //board->fiftyMoveRule ||
+        popcnt(board->sides[WHITE] | board->sides[BLACK]) > (int)TB_LARGEST)
+        return TB_RESULT_FAILED;
+
+    printf("hi");
+
+    return tb_probe_wdl(
+            board->sides[WHITE], board->sides[BLACK],
+            board->pieces[KING], board->pieces[QUEEN],
+            board->pieces[ROOK], board->pieces[BISHOP],
+            board->pieces[KNIGHT], board->pieces[PAWN],
+            0, 0, 0, board->turn);
+}
