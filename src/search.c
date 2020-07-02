@@ -346,10 +346,6 @@ void *startSearch(void *args) {
 
     }
 
-    // So that we dont report an incomplete depth
-    // we will decrease it before reporting
-    thread->depth--;
-
     if (masterThread) reportSearchInfo(thread->threads);
 
     return NULL;

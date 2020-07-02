@@ -464,7 +464,7 @@ void bench(int argc, char **argv) {
 
     Key nodes = 0ull;
 
-    int depth = argc > 2 ? atoi(argv[2]) : 6;
+    int depth = argc > 2 ? atoi(argv[2]) : 13;
     int threadCount = argc > 3 ? atoi(argv[3]) : 1;
     int ttSize = argc > 4 ? atoi(argv[4]) : 16;
 
