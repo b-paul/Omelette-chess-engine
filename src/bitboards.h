@@ -237,7 +237,7 @@ static inline int distance(int a, int b) {
     assert(validSquare(a));
     assert(validSquare(b));
 
-    return max(abs(file(a) - file(b)), abs(rank(a) - rank(b)));
+    return MIN(abs(file(a) - file(b)), abs(rank(a) - rank(b)));
 
 }
 
