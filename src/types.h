@@ -3,9 +3,9 @@
 typedef unsigned long long Bitboard;
 typedef unsigned long long Key;
 
-#define max(a, b) (((a) > (b)) ? a : b)
-#define min(a, b) (((a) < (b)) ? a : b)
-#define clamp(a, b, c) (min((a), max((b), (c))))
+#define MAX(a, b) (((a) > (b)) ? a : b)
+#define MIN(a, b) (((a) < (b)) ? a : b)
+#define CLAMP(a, b, c) (MIN((a), MAX((b), (c))))
 
 #define WDL_WIN 31256
 

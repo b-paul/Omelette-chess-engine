@@ -29,13 +29,11 @@ Move getBestMove(Pos board, Thread *threads);
 static inline unsigned probeSyzygyWDL(Pos *board) {
     // We only need to probe syzygy if we become an x man position
     // e.g. a position with 6 pieces and capture to 5 piece
-    if (//board->enPas ||
-        //board->castlePerms ||
-        //board->fiftyMoveRule ||
+    if (board->enPas ||
+        board->castlePerms ||
+        board->fiftyMoveRule ||
         popcnt(board->sides[WHITE] | board->sides[BLACK]) > (int)TB_LARGEST)
         return TB_RESULT_FAILED;
-
-    printf("hi");
 
     return tb_probe_wdl(
             board->sides[WHITE], board->sides[BLACK],

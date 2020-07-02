@@ -237,11 +237,11 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         // LMR
         if (depth > 2 &&
             movecnt > 2) {
-            R = reductionTable[min(depth, 63)][min(movecnt, 63)];
+            R = reductionTable[MIN(depth, 63)][MIN(movecnt, 63)];
 
             R += isQuiet;
 
-            int RDepth = clamp(depth-R-1, 1, depth-1);
+            int RDepth = CLAMP(depth-R-1, 1, depth-1);
 
             score = -alphaBeta(board, -alpha-1, -alpha, RDepth, height+1, thread, &lastPv);
 
@@ -312,8 +312,8 @@ void *startSearch(void *args) {
 
         if (thread->depth >= 5) {
 
-            alpha = max(-999999, thread->score-delta);
-            beta = min(999999, thread->score+delta);
+            alpha = MAX(-999999, thread->score-delta);
+            beta = MIN(999999, thread->score+delta);
 
         }
 
@@ -323,9 +323,9 @@ void *startSearch(void *args) {
 
             if (score <= alpha) {
                 beta = (alpha+beta)/2;
-                alpha = max(score - delta, -999999);
+                alpha = MAX(score - delta, -999999);
             } else if (score >= beta) {
-                beta = min(score + delta, 999999);
+                beta = MIN(score + delta, 999999);
             } else
                 break;
 
