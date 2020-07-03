@@ -3,9 +3,6 @@
 #include "position.h"
 #include "types.h"
 
-#include <stdbool.h>
-
-// Zero out history table
 void initHistoryTable(HistoryTable *table) {
     for (int i = 0; i < SQ_CNT; i++) {
         for (int j = 0; j < SQ_CNT; j++) {
@@ -22,10 +19,8 @@ void initHistoryTable(HistoryTable *table) {
     }
 }
 
-// If there is a beta cutoff, store the move into
-// a table
 void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, int depth, int height) {
-    int bonus = SQUARED(depth);
+    int bonus = depth*depth;
     table->historyScores[board->turn][moveFrom(move)][moveTo(move)] += bonus;
 
     if (table->killers[height][0].value != move->value) {
@@ -34,22 +29,14 @@ void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, int depth,
     }
 }
 
-// Scores used for MVV-LVA
-// MVV-LVA is used for evaluating
-// the strength of a capture
-int MVVLVAValues[PIECE_TYPE_CNT] = {
-    0,
-    // Pieces start at index 1
+int MVVLVAValues[PIECE_TYPE_CNT] = {                                                                                                                        0,
     100, 200, 300, 400, 500, 600
 };
 
-// Remove the move at index
 void popMove(MoveList *moves, int index) {
     moves->moves[index] = moves->moves[--moves->count];
 }
 
-// This zeroes out some values and initializes
-// things like the ttMove
 void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, int height) {
 
     // Init the undo
@@ -72,8 +59,6 @@ void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, int height) {
     mp->ttMove = (moveIsPseudolegal(ttMove, board) ? *ttMove : noMove);
 }
 
-// Find the next best move in the list based on the
-// score value of the moves
 int nextMoveIndex(MoveList *moves, int index) {
     int bestIndex = index;
 
@@ -86,13 +71,9 @@ int nextMoveIndex(MoveList *moves, int index) {
     return bestIndex;
 }
 
-// Use MVV-LVA to guess how good a capture
-// generally is, and store it into the score
-// of the move
 void evalNoisy(MoveList *moves, Pos *board) {
     // MVV-LVA is used
-    Square from,to;
-    Piece fPiece,tPiece;
+    int from,to,fPiece,tPiece;
     for (int i = 0; i < moves->count; i++) {
         from = moveFrom(&moves->moves[i]);
         to = moveTo(&moves->moves[i]);
@@ -113,10 +94,8 @@ void evalNoisy(MoveList *moves, Pos *board) {
     }
 }
 
-// Lookup history scores and killer moves and 
-// evaluate quiet moves based on these scores
 void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos *board, int height) {
-    Piece from, to;
+    int from, to;
     for (int i = 0; i < moves->count; i++) {
         // If the move is a killer move
         // set the score to a big number;
@@ -131,7 +110,7 @@ void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos *board, int height) {
     }
 }
 
-Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, bool onlyNoisy) {
+Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, int onlyNoisy) {
     int best;
     Move bestMove;
     switch (mp->stage) {

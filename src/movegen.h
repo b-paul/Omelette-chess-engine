@@ -3,12 +3,12 @@
 #include "types.h"
 
 struct Move {
-    Moves value;
+    int value;
     int score;
 
     // Stored when making a capture for one turn
     // Used to undo captures
-    Piece lastCapture;
+    int lastCapture;
 
 };
 
@@ -17,5 +17,5 @@ struct MoveList {
     int count;
 };
 
-void genMoves(MoveList* moves, Pos *board, MoveType type);
+void genMoves(MoveList* moves, Pos *board, int type);
 

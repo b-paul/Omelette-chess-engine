@@ -4,12 +4,6 @@
 #include "types.h"
 #include "fathom/tbprobe.h"
 
-#include <stdbool.h>
-
-// Report the move that is currently
-// being searched after 5 seconds
-#define REPORT_TIME 5000
-
 struct PrincipalVariation {
     Move pv[256];
     int length;
@@ -28,12 +22,10 @@ struct Search {
     int startTime;
 };
 
-unsigned long long perft(Pos *board, int depth, bool isRoot);
+Bitboard perft(Pos *board, int depth, int isRoot);
 void initSearch();
 Move getBestMove(Pos board, Thread *threads);
 
-// Probe the Syzygy Tablebase for win draw loss
-// information about the position in and endgame
 static inline unsigned probeSyzygyWDL(Pos *board) {
     // We only need to probe syzygy if we become an x man position
     // e.g. a position with 6 pieces and capture to 5 piece

@@ -83,7 +83,7 @@ static inline int popcnt(Bitboard bb) {
 
 
 
-static inline bool validSquare(Square sq) {
+static inline bool validSquare(int sq) {
 
     // If the square is in the range of 0-63
 
@@ -93,7 +93,7 @@ static inline bool validSquare(Square sq) {
 
 
 
-static inline bool testBit(Bitboard bb, Square sq) {
+static inline bool testBit(Bitboard bb, int sq) {
 
     // Check the square is valid
 
@@ -108,7 +108,7 @@ static inline bool testBit(Bitboard bb, Square sq) {
 
 
 
-static inline void setBit(Bitboard *bb, Square sq) {
+static inline void setBit(Bitboard *bb, int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -124,7 +124,7 @@ static inline void setBit(Bitboard *bb, Square sq) {
 
 
 
-static inline void popBit(Bitboard *bb, Square sq) {
+static inline void popBit(Bitboard *bb, int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -176,7 +176,7 @@ static inline int poplsb(Bitboard *bb) {
 // A square can be anywhere from 0 to 63, which is 6 bits
 // The file is always the first 3 bits
 // The rank is always the last 3 bits
-static inline int sq(File f, Rank r) {
+static inline int sq(int f, int r) {
 
     // Check file and rank are valid
     assert((f >= 0) && (f < 8));
@@ -188,7 +188,7 @@ static inline int sq(File f, Rank r) {
 
 
 
-static inline int file(Square sq) {
+static inline int file(int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -202,7 +202,7 @@ static inline int file(Square sq) {
 
 
 
-static inline int rank(Square sq) {
+static inline int rank(int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -217,7 +217,7 @@ static inline int rank(Square sq) {
 
 
 // Returns the square opposite to sq along the file axis
-static inline int flipSq(Square square) {
+static inline int flipSq(int square) {
 
     // Check the square is valid
     assert(validSquare(square));
@@ -231,7 +231,7 @@ static inline int flipSq(Square square) {
 
 
 // Find the distance between two squares
-static inline int distance(Square a, Square b) {
+static inline int distance(int a, int b) {
     
     // Check the squares are valid
     assert(validSquare(a));
@@ -244,15 +244,15 @@ static inline int distance(Square a, Square b) {
 
 // Returns a Bitboard that contains just
 // the specified rank
-static inline Bitboard bbRank(Rank r) {
+static inline Bitboard bbRank(int rank) {
 
     // Check the rank is valid
-    assert(r < 8);
+    assert(rank < 8);
 
     // Shifts a constant to return the Bitboard 
     // requested
 
-    return Rank1 << (r * 8);
+    return Rank1 << (rank * 8);
 
 }
 
@@ -260,7 +260,7 @@ static inline Bitboard bbRank(Rank r) {
 
 // Returns a Bitboard that contains just
 // the specified file
-static inline Bitboard bbFile(File f) {
+static inline Bitboard bbFile(int file) {
 
     // Check the file is valid
     assert(file < 8);
@@ -268,23 +268,23 @@ static inline Bitboard bbFile(File f) {
     // Shifts a constant to return the Bitboard 
     // requested
 
-    return FileA << f;
+    return FileA << file;
 
 }
 
 // Returns true if squares a b and c line up
 // c is the bitboard of its square instead of an integer
-static inline bool isBetween(Square a, Square b, Bitboard c) {
+static inline int isBetween(int a, int b, Bitboard c) {
     return arrRectangular[a][b] & c;
 }
 
 // Returns a bitboard of the squares between square
 // a and b
-static inline Bitboard betweenBB(Square a, Square b) {
+static inline int betweenBB(int a, int b) {
     return arrRectangular[a][b];
 }
 
 // Returns true if the BB contains more than 1 bit
-static inline bool moreOneBit(Bitboard bb) {
+static inline int moreOneBit(Bitboard bb) {
     return bb & (bb - 1);
 }

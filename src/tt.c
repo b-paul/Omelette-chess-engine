@@ -1,9 +1,7 @@
-#include "evaluate.h"
 #include "movegen.h"
 #include "tt.h"
 #include "types.h"
 
-#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -47,7 +45,7 @@ void initTT(tTable *table, int size) {
 
 }
 
-void addEntry(ttEntry *entry, Key key, Move *move, int depth, Score eval, Bound type) {
+void addEntry(ttEntry *entry, Key key, Move *move, int depth, int eval, int type) {
     if (key != entry->key || depth >= entry->depth) {
         entry->key = key;
         entry->move = *move;
@@ -57,7 +55,7 @@ void addEntry(ttEntry *entry, Key key, Move *move, int depth, Score eval, Bound 
     }
 }
 
-ttEntry *probeTT(tTable *tt, Key key, bool *isReplaced) {
+ttEntry *probeTT(tTable *tt, Key key, int *isReplaced) {
 
     // We pretty much will never have
     // tt entryCount > key even with

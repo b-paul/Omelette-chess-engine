@@ -11,7 +11,6 @@
 #include "uci.h"
 #include "fathom/tbprobe.h"
 
-#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
@@ -20,7 +19,7 @@
 
 const char* startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-extern volatile bool STOP_SEARCH;
+extern volatile int STOP_SEARCH;
 
 Key zobristPieces[SQ_CNT][PIECE_CNT];
 Key zobristEnPas[8];
@@ -36,10 +35,10 @@ void parseFen(const char* fen, Pos* board) {
     // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 
     // Counts the square currently being edited
-    Square square = H8;
+    int square = 63;
 
     // Adds pieces to the board
-    while (*fen && square >= A1) {
+    while (*fen && square >= 0) {
         switch (*fen) {
 
             // Add the piece to the board
@@ -226,14 +225,14 @@ void parseFen(const char* fen, Pos* board) {
 }
 
 
-void intToSquare(Square square, char *string) {
+void intToSquare(int square, char *string) {
     *string++ = file(square) + 'a';
     *string++ = rank(square) + '1';
 }
 
 void moveToStr(Move move, Pos board, char *string) {
-    Square from = moveFrom(&move);
-    Square to = moveTo(&move);
+    int from = moveFrom(&move);
+    int to = moveTo(&move);
 
     intToSquare(from, &string[0]);
     intToSquare(to, &string[2]);
@@ -261,7 +260,7 @@ void moveToStr(Move move, Pos board, char *string) {
 
 // Warning bad code
 int strToFile(char *str) {
-    File file;
+    int file;
 
     switch (*str) {
         case 'a':
@@ -477,14 +476,12 @@ void bench(int argc, char **argv) {
     int startTime = getTime();
 
     Search info;
+    info.startTime = startTime;
     info.time = 999999999;
     info.maxDepth = depth;
     info.infinite = 0;
 
     for (int i = 0; strcmp(BenchFENs[i], ""); i++) {
-
-        info.startTime = getTime();
-
         resetBoard(&board);
         parseFen(BenchFENs[i], &board);
 
@@ -531,7 +528,7 @@ void uciLoop() {
     pthread_t goThread;
     Thread *threads = initThreads(1, &tt, &hTable);
 
-    bool QUIT_SIGNAL = 1;
+    int QUIT_SIGNAL = 1;
 
     do {
         fflush(stdout);

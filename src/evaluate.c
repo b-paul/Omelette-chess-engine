@@ -3,7 +3,7 @@
 #include "position.h"
 #include "types.h"
 
-Score materialBonus[PIECE_CNT] = {
+int materialBonus[PIECE_CNT] = {
     0,
     S(100, 150), // Pawns
     S(300, 250), // Knights
@@ -13,7 +13,7 @@ Score materialBonus[PIECE_CNT] = {
     S(0,0)       // King
 };
 
-Score PSQTBonus[PIECE_CNT][RANK_CNT][FILE_CNT/2] = {
+int PSQTBonus[PIECE_CNT][RANK_CNT][FILE_CNT/2] = {
     {},
     { // Pawns
         {S(0,0), S(0,0), S(0,0), S(0,0)},
@@ -72,16 +72,16 @@ Score PSQTBonus[PIECE_CNT][RANK_CNT][FILE_CNT/2] = {
     }, 
 };
 
-Score PSQT[PIECE_CNT][SQ_CNT];
+int PSQT[PIECE_CNT][SQ_CNT];
 
-Score bishopPairBonus = S(20, 50);
+int bishopPairBonus = S(20, 50);
 
 void initEval() {
     // Add the material bonus to
     // each psqt square
-    for (Square i = 0; i < SQ_CNT; i++) {
-        Rank r = rank(i);
-        File f = (file(i)>3 ? 7-file(i) : file(i));
+    for (int i = 0; i < SQ_CNT; i++) {
+        int r = rank(i);
+        int f = (file(i)>3 ? 7-file(i) : file(i));
 
         PSQT[wP][i] = materialBonus[PAWN] + PSQTBonus[PAWN][r][f];
         PSQT[wN][i] = materialBonus[KNIGHT] + PSQTBonus[KNIGHT][r][f];
@@ -99,8 +99,6 @@ void initEval() {
     }
 }
 
-// This is used to calculate the ratio
-// between midgame score and endgame score
 int phase(Pos *board) {
     int p = 24;
     p -= popcnt(board->pieces[KNIGHT] | board->pieces[BISHOP]);
@@ -110,21 +108,18 @@ int phase(Pos *board) {
 }
 
 // Evaluate a board position
-Score evaluate(Pos *board) {
+int evaluate(Pos *board) {
     
-    Score result = 0;
+    // Return value
 
-    // This value is calculated as
-    // moves are made
+    int result = 0;
+
     result += board->psqtScore;
 
     int p = phase(board);
-    Score mg = mgS(result);
-    Score eg = egS(result);
-    // Distrobute the score based on the phase
+    int mg = mgS(result);
+    int eg = egS(result);
     result = ((mg * (256-p)) + (eg * p))/256;
 
-    // We want a negative score for black so
-    // that it is still maximized as black
-    return (board->turn == WHITE ? result : -result);
+    return (board->turn ? -result : result);
 }

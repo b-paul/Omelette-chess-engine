@@ -7,13 +7,11 @@
 #include "position.h"
 #include "types.h"
 
-#include <stdbool.h>
-
 void initZobrist();
 void initPosition();
 void resetBoard(Pos* board);
 void printBoard(Pos board);
-Bitboard sliderBlockers(Pos board, Square square);
+Bitboard sliderBlockers(Pos board, int square);
 int isDrawn(Pos *board, int height);
 int makeMove(Pos* board, Move *move);
 void undoMove(Pos* board, Move *move, Undo *undo);
@@ -27,7 +25,7 @@ struct Pos {
 
     // Array showing the board and all of its pieces
     // Used for finding a piece at a square
-    Piece pieceList[SQ_CNT];
+    int pieceList[SQ_CNT];
 
     // Array of bitboards showing all pieces on the board
     // Categoriesed by piece type (not by side)
@@ -36,9 +34,9 @@ struct Pos {
     // Array of bitboards showing each sides pieces on the board
     Bitboard sides[CL_CNT];
 
-    CastlePerms castlePerms;
-    Colour turn;
-    Square enPas;
+    int castlePerms;
+    int turn;
+    int enPas;
     int fiftyMoveRule;
 
     int plyLength;
@@ -47,20 +45,20 @@ struct Pos {
     // Zobrist hash key of the position
     Key hash;
 
-    Score psqtScore;
+    int psqtScore;
 };
 
 struct Undo {
-    Square lastEnPas;
+    int lastEnPas;
     Key lastHash;
-    CastlePerms lastCastle;
+    int lastCastle;
     int lastFiftyRule;
-    Score lastPSQT;
+    int lastPSQT;
 };
 
 // Is check
 // side is the side to check
-static inline Bitboard squareAttackers(Pos *board, Square sq, Colour side) {
+static inline Bitboard squareAttackers(Pos *board, int sq, int side) {
     if (sq > 63) {
         printBoard(*board);
         printBitBoard(board->pieces[KING]);
@@ -90,35 +88,35 @@ static inline Bitboard squareAttackers(Pos *board, Square sq, Colour side) {
     return pawnAttackers | knightAttackers | diagAttackers | horizontalAttackers | kingAttackers;
 }
 
-static inline bool hasNonPawnMaterial(Pos *board) {
+static inline int hasNonPawnMaterial(Pos *board) {
     return (board->pieces[KNIGHT] ||
             board->pieces[BISHOP] ||
             board->pieces[ROOK] ||
             board->pieces[QUEEN]) ? 1 : 0;
 }
 
-static inline Square moveFrom(Move *move) {
+static inline int moveFrom(Move *move) {
     return move->value & 63;
 }
 
-static inline Square moveTo(Move *move) {
+static inline int moveTo(Move *move) {
     return (move->value >> 6) & 63;
 }
 
-static inline PieceType pieceType(int piece) {
+static inline int pieceType(int piece) {
     // first 4 bits
     return (piece & 7);// - 1;
 }
 
-static inline MoveFlag moveType(Move *move) {
+static inline int moveType(Move *move) {
     return move->value & 0x18000;
 }
 
-static inline PieceType promotePiece(Move *move) {
+static inline int promotePiece(Move *move) {
     return (move->value & 0x7000) >> 12;
 }
 
-static inline bool castlePathAttacked(Pos *board, Bitboard castlePath) {
+static inline int castlePathAttacked(Pos *board, Bitboard castlePath) {
     while (castlePath) {
         if (squareAttackers(board, poplsb(&castlePath), board->turn)) {
             return 0;
@@ -127,14 +125,14 @@ static inline bool castlePathAttacked(Pos *board, Bitboard castlePath) {
     return 1;
 }
 
-static inline bool moveIsTactical(Move *move, Pos *board) {
+static inline int moveIsTactical(Move *move, Pos *board) {
     int to = moveTo(move);
     return board->pieceList[to] != NONE ||
            moveType(move) == ENPAS ||
            promotePiece(move);
 }
 
-static inline bool moveIsPseudolegal(Move *move, Pos *board) {
+static inline int moveIsPseudolegal(Move *move, Pos *board) {
     if (move->value == NO_MOVE) return 0;
 
     int from = moveFrom(move);
@@ -213,17 +211,13 @@ static inline bool moveIsPseudolegal(Move *move, Pos *board) {
             case KING:
                 legalAttack = (1ULL << to) & getKingAttacks(to);
                 break;
-            default:
-                printf("Invalid piece in moveIsPseudoLegal");
-                assert(0);
-                break;
         }
         return !moveType(move) && legalAttack;
     }
 }
-static inline void placePSQT(Pos *board, Piece piece, Square sq) {
+static inline void placePSQT(Pos *board, int piece, int sq) {
     board->psqtScore += PSQT[piece][sq];
 }
-static inline void removePSQT(Pos *board, Piece piece, Square sq) {
+static inline void removePSQT(Pos *board, int piece, int sq) {
     board->psqtScore -= PSQT[piece][sq];
 }

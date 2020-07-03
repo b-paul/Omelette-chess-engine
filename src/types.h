@@ -6,12 +6,10 @@ typedef unsigned long long Key;
 #define MAX(a, b) (((a) > (b)) ? a : b)
 #define MIN(a, b) (((a) < (b)) ? a : b)
 #define CLAMP(a, b, c) (MIN((a), MAX((b), (c))))
-#define SQUARED(a) (a)*(a)
 
 #define WDL_WIN 31256
-#define INF 999999
 
-typedef enum Square {
+enum Square {
     A1, B1, C1, D1, E1, F1, G1, H1,
     A2, B2, C2, D2, E2, F2, G2, H2,
     A3, B3, C3, D3, E3, F3, G3, H3,
@@ -20,29 +18,28 @@ typedef enum Square {
     A6, B6, C6, D6, E6, F6, G6, H6,
     A7, B7, C7, D7, E7, F7, G7, H7,
     A8, B8, C8, D8, E8, F8, G8, H8,
-
-    NO_SQ = -1,
+    NO_SQ,
 
     SQ_CNT = 64
-} Square ;
+};
 
-typedef enum File {
+enum File {
     FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H,
 
     FILE_CNT = 8
-} File;
+};
 
-typedef enum Rank {
+enum Rank {
     RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8,
 
     RANK_CNT = 8
-} Rank;
+};
 
-typedef enum Colour {
+enum Colour {
     WHITE, BLACK, CL_CNT = 2
-} Colour;
+};
 
-typedef enum Piece {
+enum Piece {
     NONE,
 
     // Numbers are to optimize the piece to pieceType function
@@ -50,45 +47,45 @@ typedef enum Piece {
     bP = 9, bN, bB, bR, bQ, bK,
 
     PIECE_CNT = 16
-} Piece;
+};
 
-typedef enum PieceType {
+enum PieceType {
     PAWN = 1, KNIGHT, BISHOP, ROOK, QUEEN, KING,
 
     PIECE_TYPE_CNT = 7
-} PieceType;
+};
 
-typedef enum CastlePerms {
+enum CastlePerms {
     WHITE_KING_OCC, WHITE_KING_ATTACK, WHITE_QUEEN_OCC, WHITE_QUEEN_ATTACK, 
     BLACK_KING_OCC, BLACK_KING_ATTACK, BLACK_QUEEN_OCC, BLACK_QUEEN_ATTACK,
 
     CASTLE_CNT
-} CastlePerms;
+};
 
-typedef enum CastlePermBits {
+enum CastlePermBits {
     CAN_WHITE_KING = 1,
     CAN_WHITE_QUEEN = 2,
     CAN_WHITE = 3,
     CAN_BLACK_KING = 4,
     CAN_BLACK_QUEEN = 8,
     CAN_BLACK = 12
-} CastlePermBits;
+};
 
-typedef enum MoveType {
+enum MoveType {
     QUIET, NOISY, ALLMOVES
-} MoveType;
+};
 
-typedef enum MoveFlag {
+enum MoveFlags {
     NORMAL,
     PROMOTE = 1 << 15,
     ENPAS = 2 << 15,
     CASTLE = 3 << 15
-} MoveFlag;
+};
 
-typedef enum Moves {
+enum Moves {
         NO_MOVE,
         NULL_MOVE = 65,
-} Moves;
+};
 
 typedef struct goArgs goArgs;
 typedef struct HistoryTable HistoryTable;

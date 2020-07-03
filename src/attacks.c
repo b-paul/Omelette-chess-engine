@@ -10,51 +10,45 @@
 int bishopDir[4] = {9, 7, -7, -9};
 int rookDir[4] = {8, 1, -1, -8};
 
-// These fuctions just save the attacks of
-// the pieces for each square to an array
 void initPawnAttacks() {
-    for (Square sq = 0; sq < SQ_CNT; sq++) {
-        pawnAttacks[sq][WHITE] |= noeaOne(1ULL << sq);
-        pawnAttacks[sq][WHITE] |= noweOne(1ULL << sq);
-        pawnAttacks[sq][BLACK] |= soeaOne(1ULL << sq);
-        pawnAttacks[sq][BLACK] |= soweOne(1ULL << sq);
+    for (int i = 0; i < SQ_CNT; i++) {
+        pawnAttacks[i][WHITE] |= noeaOne(1ULL << i);
+        pawnAttacks[i][WHITE] |= noweOne(1ULL << i);
+        pawnAttacks[i][BLACK] |= soeaOne(1ULL << i);
+        pawnAttacks[i][BLACK] |= soweOne(1ULL << i);
     }
 }
 
 void initKnightAttacks() {
-    for (Square sq = 0; sq < SQ_CNT; sq++) {
-        knightAttacks[sq] |= nonoea(1ULL << sq);
-        knightAttacks[sq] |= nonowe(1ULL << sq);
-        knightAttacks[sq] |= noeaea(1ULL << sq);
-        knightAttacks[sq] |= nowewe(1ULL << sq);
-        knightAttacks[sq] |= soeaea(1ULL << sq);
-        knightAttacks[sq] |= sowewe(1ULL << sq);
-        knightAttacks[sq] |= sosoea(1ULL << sq);
-        knightAttacks[sq] |= sosowe(1ULL << sq);
+    for (int i = 0; i < SQ_CNT; i++) {
+        knightAttacks[i] |= nonoea(1ULL << i);
+        knightAttacks[i] |= nonowe(1ULL << i);
+        knightAttacks[i] |= noeaea(1ULL << i);
+        knightAttacks[i] |= nowewe(1ULL << i);
+        knightAttacks[i] |= soeaea(1ULL << i);
+        knightAttacks[i] |= sowewe(1ULL << i);
+        knightAttacks[i] |= sosoea(1ULL << i);
+        knightAttacks[i] |= sosowe(1ULL << i);
     }
 }
 
 void initKingAttacks() {
-    for (Square sq = 0; sq < SQ_CNT; sq++) {
-        kingAttacks[sq] |= noeaOne(1ULL << sq);
-        kingAttacks[sq] |= nortOne(1ULL << sq);
-        kingAttacks[sq] |= noweOne(1ULL << sq);
-        kingAttacks[sq] |= eastOne(1ULL << sq);
-        kingAttacks[sq] |= westOne(1ULL << sq);
-        kingAttacks[sq] |= soeaOne(1ULL << sq);
-        kingAttacks[sq] |= soutOne(1ULL << sq);
-        kingAttacks[sq] |= soweOne(1ULL << sq);
+    for (int i = 0; i < SQ_CNT; i++) {
+        kingAttacks[i] |= noeaOne(1ULL << i);
+        kingAttacks[i] |= nortOne(1ULL << i);
+        kingAttacks[i] |= noweOne(1ULL << i);
+        kingAttacks[i] |= eastOne(1ULL << i);
+        kingAttacks[i] |= westOne(1ULL << i);
+        kingAttacks[i] |= soeaOne(1ULL << i);
+        kingAttacks[i] |= soutOne(1ULL << i);
+        kingAttacks[i] |= soweOne(1ULL << i);
     }
 }
 
-// This fuction gets the attack of a slider piece
-// including the occupancy
-// We dont use this in move generation etc, but
-// instead save the results to an adress
-Bitboard sliderAttack(Square sq, Bitboard occ, int Direction[4]) {
+Bitboard sliderAttack(int sq, Bitboard occ, int Direction[4]) {
     Bitboard result = 0ULL;
     for (int i = 0; i < 4; i++) {
-        for (Square square = sq + Direction[i]; validSquare(square) &&
+        for (int square = sq + Direction[i]; validSquare(square) &&
         (distance(square, square - Direction[i]) == 1); square += Direction[i]) {
             setBit(&result, square);
             if (occ & (1ULL << square)) break;
@@ -63,12 +57,7 @@ Bitboard sliderAttack(Square sq, Bitboard occ, int Direction[4]) {
     return result;
 }
 
-// This fuction saves the results of sliderAttack
-// to an array, along with the magic number
-// which is used to lookup the index using
-// the function
-// ((occ & mask) * magic) >> shift
-void initSlider(Square sq, Magic* list, Bitboard magic, int Direction[4]) {
+void initSlider(int sq, Magic* list, Bitboard magic, int Direction[4]) {
     // Used with the mask
     Bitboard edges = ((bbRank(RANK_1) | bbRank(RANK_8)) & ~bbRank(rank(sq)))
                                      | ((bbFile(FILE_A) | bbFile(FILE_H)) & ~bbFile(file(sq)));
@@ -102,14 +91,10 @@ void initAttacks() {
     rookMagics[A1].attacks = rookAttacks;
 
 
-    for (Square sq = 0; sq < SQ_CNT; sq++) {
-        // These arrays are a list of
-        // attacks from slider pieces
-        // excluding occupancy
-        bPseudoAttacks[sq] = sliderAttack(sq, 0, bishopDir);
-        rPseudoAttacks[sq] = sliderAttack(sq, 0, rookDir);
-
-        initSlider(sq, bishopMagics, bishopMagic[sq], bishopDir);
-        initSlider(sq, rookMagics, rookMagic[sq], rookDir);
+    for (int i = 0; i < SQ_CNT; i++) {
+        bPseudoAttacks[i] = sliderAttack(i, 0, bishopDir);
+        rPseudoAttacks[i] = sliderAttack(i, 0, rookDir);
+        initSlider(i, bishopMagics, bishopMagic[i], bishopDir);
+        initSlider(i, rookMagics, rookMagic[i], rookDir);
     }
 }
