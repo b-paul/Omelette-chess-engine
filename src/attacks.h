@@ -40,7 +40,8 @@ Magic rookMagics[SQ_CNT];
 
 void initAttacks();
 
-
+// This function is used to calculate the index
+// of a slider piece based on the board's occupancy
 static inline int sliderIndex(Bitboard occ, Magic magic) {
     #ifdef USE_PEXT
         // Built in to some CPUs
@@ -54,34 +55,34 @@ static inline int sliderIndex(Bitboard occ, Magic magic) {
     #endif
 }
 
-
-static inline Bitboard getPawnAttacks(int sq, int side) {
+// Helper functions for finding attacks
+static inline Bitboard getPawnAttacks(Square sq, Colour side) {
     assert(validSquare(sq));
     assert((side >= 0) && (side < 2));
     return pawnAttacks[sq][side];
 }
 
-static inline Bitboard getKnightAttacks(int sq) {
+static inline Bitboard getKnightAttacks(Square sq) {
     assert(validSquare(sq));
     return knightAttacks[sq];
 }
 
-static inline Bitboard getKingAttacks(int sq) {
+static inline Bitboard getKingAttacks(Square sq) {
     assert(validSquare(sq));
     return kingAttacks[sq];
 }
 
-static inline Bitboard getBishopAttacks(int sq, Bitboard occ) {
+static inline Bitboard getBishopAttacks(Square sq, Bitboard occ) {
     assert(validSquare(sq));
     return bishopMagics[sq].attacks[sliderIndex(occ, bishopMagics[sq])];
 }
 
-static inline Bitboard getRookAttacks(int sq, Bitboard occ) {
+static inline Bitboard getRookAttacks(Square sq, Bitboard occ) {
     assert(validSquare(sq));
     return rookMagics[sq].attacks[sliderIndex(occ, rookMagics[sq])];
 }
 
-static inline Bitboard getQueenAttacks(int sq, Bitboard occ) {
+static inline Bitboard getQueenAttacks(Square sq, Bitboard occ) {
     assert(validSquare(sq));
     return getBishopAttacks(sq, occ) | getRookAttacks(sq, occ);
 }

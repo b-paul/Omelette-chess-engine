@@ -10,7 +10,7 @@
 
 
 
-void makePromotion(MoveList* moves, int to, int from, int type) {
+void makePromotion(MoveList* moves, Square to, Square from, MoveType type) {
 
     if (type != QUIET) {
 
@@ -34,11 +34,11 @@ void makePromotion(MoveList* moves, int to, int from, int type) {
 
 
 
-void genPawnMoves(MoveList* moves, Pos board, int type) {
+void genPawnMoves(MoveList* moves, Pos board, MoveType type) {
     Bitboard occ = board.sides[WHITE] | board.sides[BLACK];
     Bitboard empty = ~occ;
 
-    int sq;
+    Square sq;
     int pushDir = (board.turn) ? -8 : 8;
     int capDir1 = (board.turn) ? -7 : 7;
     int capDir2 = (board.turn) ? -9 : 9;
@@ -120,7 +120,7 @@ void genPawnMoves(MoveList* moves, Pos board, int type) {
     }
 }
 
-void genMoves(MoveList* moves, Pos *board, int type) {
+void genMoves(MoveList* moves, Pos *board, MoveType type) {
     genPawnMoves(moves, *board, type);
 
     Bitboard ourKnights = board->pieces[KNIGHT] & board->sides[board->turn];
@@ -137,7 +137,7 @@ void genMoves(MoveList* moves, Pos *board, int type) {
 
     // return;
 
-    int from;
+    Square from;
 
     Bitboard attacks;
 

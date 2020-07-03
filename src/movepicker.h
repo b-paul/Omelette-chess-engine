@@ -4,6 +4,8 @@
 #include "position.h"
 #include "types.h"
 
+#include <stdbool.h>
+
 struct MovePicker {
     int stage;
 
@@ -40,4 +42,4 @@ enum MoveStages {
 void initHistoryTable(HistoryTable *table);
 void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, int depth, int height);
 void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, int height);
-Move selectNextMove(MovePicker *mp, HistoryTable *table, Pos *board, int onlyNoisy);
+Move selectNextMove(MovePicker *mp, HistoryTable *table, Pos *board, bool onlyNoisy);

@@ -11,20 +11,21 @@
 
 #include <math.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include <string.h>
 
-volatile int STOP_SEARCH = 0;
+volatile bool STOP_SEARCH = 0;
 
-int futilityMargin = 230;
+Score futilityMargin = 230;
 
-Bitboard perft(Pos *board, int depth, int isRoot) {
+unsigned long long perft(Pos *board, int depth, bool isRoot) {
     if (depth == 0) return 1;
 
     MoveList moves;
     moves.count = 0;
     genMoves(&moves, board, ALLMOVES);
 
-    int nodes = 0;
+    unsigned long long nodes = 0;
 
     MovePicker mp;
     Move ttMove;
@@ -46,28 +47,33 @@ Bitboard perft(Pos *board, int depth, int isRoot) {
 int reductionTable[64][64];
 
 void initSearch() {
-    for (int i = 0; i < 64; i++)
-        for (int j = 0; j < 64; j++) {
+    for (Square i = 0; i < SQ_CNT; i++)
+        for (Square j = 0; j < SQ_CNT; j++) {
             reductionTable[i][j] = 1 + (int)((log(i)*log(j))/10);
         }
 }
 
-int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, PrincipalVariation *pv) {
+Score qsearch(Pos *board, Score alpha, Score beta, int height, Thread *thread, PrincipalVariation *pv) {
     thread->nodes++;
     if (height > thread->seldepth) thread->seldepth = height;
 
+    // If we do not have enough time left or
+    // the gui has requested a stop, stop searching
     if (STOP_SEARCH || stopSearch(thread)) longjmp(thread->jumpEnv, 1);
 
-    int standPat = evaluate(board);
+    Score standPat = evaluate(board);
 
+    // If our evaluation is greater than
+    // beta, cutoff
     if (standPat >= beta)
         return standPat;
 
-    if (alpha < standPat)
+    // If our evaluation is greater than
+    // alpha, set alpha to the eval
+    if (standPat > alpha)
         alpha = standPat;
 
-    int score;
-    int bestScore = standPat;
+    Score score, bestScore = standPat;
     Move move;
 
     PrincipalVariation lastPv;
@@ -81,25 +87,34 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
 
     initMovePicker(&mp, board, &ttMove, height);
 
+    // Iterate over every move
     while ((move = selectNextMove(&mp, thread->hTable, board, 1)).value != NO_MOVE) {
+        // If the move is illegal, undo the move
         if (!makeMove(board, &move)) {
             undoMove(board, &move, &mp.undo);
             continue;
         }
 
+        // Search our new position
         score = -qsearch(board, -beta, -alpha, height+1, thread, &lastPv);
+
+        // Undo after we have completed the search
         undoMove(board, &move, &mp.undo);
 
+        // If we have raised the best score, set the best score
         if (score > bestScore) {
             bestScore = score;
 
+            // If we have raised alpha, set alpha
             if (score > alpha) {
                 alpha = score;
                 
+                // Write to the pv on an alpha raise
                 pv->length = lastPv.length + 1;
                 pv->pv[0] = move;
                 memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
 
+                // Beta cutoff
                 if (alpha >= beta) {
                     break;
                 } 
@@ -110,7 +125,7 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
     return bestScore;
 }
 
-int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *thread, PrincipalVariation *pv) {
+int alphaBeta(Pos *board, Score alpha, Score beta, int depth, int height, Thread *thread, PrincipalVariation *pv) {
     if (depth <= 0) {
         return qsearch(board, alpha, beta, height, thread, pv);
     }
@@ -127,29 +142,34 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     lastPv.length = 0;
     pv->length = 0;
 
-    int score,bestScore=-999999;
+    Score score,bestScore=-INF;
     int movecnt = 0;
     Move move, bestMove;
 
-    // PVS sets alpha to beta-1 on
-    // non-PV nodes
-    int PVNode = alpha != beta-1;
+    // This bool determines whether the search is
+    // in a full window search or a zero window search
+    // When it is in a zero window search, alpha
+    // is 1 less than beta
+    // This makes it so that if there is an increase
+    // in alpha it will almost always also cause a beta cutoff
+    bool PVNode = alpha != beta-1;
 
-    int RootNode = height == 0;
+    bool RootNode = height == 0;
 
-    int eval = evaluate(board);
+    Score eval = evaluate(board);
 
-    int isQuiet;
-    int R, didLMR;
+    bool isQuiet;
+    int R;
+    bool didLMR;
 
-    int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
+    bool inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
     depth += inCheck;
 
     MovePicker mp;
 
     ttEntry *hashEntry;
-    int isReplaced;
-    int ttEval;
+    bool isReplaced;
+    Score ttEval;
     Move ttMove;
 
     // Probe TT
@@ -166,6 +186,11 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     }
 
     // Syzygy tablebase probing
+    // The probeSyzygyWDL function only
+    // probes the tablebase if the last move
+    // was a capture since that is the
+    // only time the amount of pieces on the board
+    // will decrease
     unsigned entry;
     if (!RootNode &&
         (entry = probeSyzygyWDL(board)) != TB_RESULT_FAILED) {
@@ -176,7 +201,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
                     entry == TB_WIN ? WDL_WIN - height :
                     0;
 
-        int bound = entry == TB_LOSS ? UPPER :
+        Bound bound = entry == TB_LOSS ? UPPER :
                     entry == TB_WIN ? LOWER :
                     EXACT;
 
@@ -190,13 +215,19 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     }
     
     // Reverse futility pruning
- 
+    // Prune if the evaluation minus a margin
+    // is greater than beta
+    // The margin is multiplied by the depth
+    // so that in deeper positions we consider
+    // more moves
     if (!PVNode &&
         depth < 6 &&
-        eval - (futilityMargin * (depth))>= beta)
+        eval - (futilityMargin * (depth)) >= beta)
         return eval - futilityMargin;
 
     // Null move pruning
+    // If making a null move (move that does nothing)
+    // raises the score above beta, then cutoff
     if (!PVNode &&
         !inCheck &&
         eval >= beta &&
@@ -217,10 +248,13 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     initMovePicker(&mp, board, &ttMove, height);
 
+    // Iterate over every move in the move list
     while ((move = selectNextMove(&mp, thread->hTable, board, 0)).value != NO_MOVE) {
 
         isQuiet = !moveIsTactical(&move, board);
 
+        // Make the move
+        // If the move is not legal, undo the move
         if (!makeMove(board, &move)) {
             undoMove(board, &move, &mp.undo);
             continue;
@@ -228,13 +262,18 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
         movecnt++;
 
-//        if (RootNode && thread->index == 0) {
-//            reportMoveInfo(move, *board, movecnt);
-//        }
+        if (RootNode && thread->index == 0 && timeSearched(thread) > REPORT_TIME) {
+            reportMoveInfo(move, *board, movecnt);
+        }
 
         R = 0;
 
-        // LMR
+        // Late Move Reductions (LMR)
+        // On later moves, reduce the depth of
+        // the search
+        // Because of move ordering later moves
+        // tend to be worse, but this is not
+        // always the case
         if (depth > 2 &&
             movecnt > 2) {
             R = reductionTable[MIN(depth, 63)][MIN(movecnt, 63)];
@@ -243,6 +282,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
             int RDepth = CLAMP(depth-R-1, 1, depth-1);
 
+            // Do a zero window search with the new depth
             score = -alphaBeta(board, -alpha-1, -alpha, RDepth, height+1, thread, &lastPv);
 
             didLMR = 1;
@@ -250,30 +290,44 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             didLMR = 0;
         }
 
+        // If the score after LMR is greater than alpha OR
+        // if we are not doing LMR and this is not the first move
+        // or we are in a zero window search, research the position
+        // at full depth with zero window
         if ((didLMR && score > alpha) || (!didLMR && (movecnt > 1 || !PVNode))) {
             score = -alphaBeta(board, -alpha-1, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
+        // If we are in a full window search and the score of the
+        // zero window search is greater than alpha OR
+        // this is the first move search the position at full depth
+        // with full windows
         if (PVNode && ((score > alpha && score < beta) || movecnt == 1)) {
             score = -alphaBeta(board, -beta, -alpha, depth-1, height+1, thread, &lastPv);
         }
 
+        // Undo the move after searching the position
         undoMove(board, &move, &mp.undo);
 
+        // If the score is our best score, update
         if (score > bestScore) {
             bestScore = score;
             bestMove = move;
 
             // Weiss logic
+            // Update our PV if we raised alpha in a PVNode,
+            // or if this is the first move in the RootNode
             if ((score > alpha && PVNode) || (RootNode && movecnt == 1)) {
                 pv->length = lastPv.length + 1;
                 pv->pv[0] = move;
                 memcpy(pv->pv+1, lastPv.pv, sizeof(Move) * lastPv.length);
             }
 
+            // If the score is greater than alpha, update it
             if (score > alpha) {
                 alpha = score;
 
+                // Beta cutoff
                 if (alpha >= beta) {
                     updateHistoryScores(thread->hTable, board, &bestMove, depth, height);
                     break;
@@ -288,6 +342,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         bestScore = inCheck ? -999999+height : 0;
     }
 
+    // Store TT entry
     addEntry(hashEntry, board->hash, &bestMove, depth, bestScore, EXACT);
 
     return bestScore;
@@ -296,13 +351,21 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
 void *startSearch(void *args) {
     Thread *thread = (Thread*)args;
-    int score, 
-        alpha = -999999, beta = 999999, delta;
+    // Set our starting windows
+    Score score, 
+        alpha = -INF, beta = INF;
+    int delta;
     int masterThread = thread->index == 0;
     for (thread->depth = 0; thread->depth < thread->maxDepth; thread->depth++) {
-        if (STOP_SEARCH) break;
-        if (setjmp(thread->jumpEnv)) break;
+        if (STOP_SEARCH || setjmp(thread->jumpEnv)) break;
         PrincipalVariation pv;
+
+        // Aspiration windows
+        // We want to have smaller windows
+        // so that we get more cutoffs in the search
+        // However, if the windows are too small we can
+        // miss moves
+        // We will gradually widen the windows until we get a size that we want
 
         delta = 14;
 
@@ -312,8 +375,8 @@ void *startSearch(void *args) {
 
         if (thread->depth >= 5) {
 
-            alpha = MAX(-999999, thread->score-delta);
-            beta = MIN(999999, thread->score+delta);
+            alpha = MAX(-999999, thread->score - delta);
+            beta = MIN(999999, thread->score + delta);
 
         }
 
@@ -340,12 +403,15 @@ void *startSearch(void *args) {
             continue;
         }
 
+        // Update time management after every depth
+        // as master only
         updateTimeManagement(thread);
 
         reportSearchInfo(thread->threads);
 
     }
 
+    // Report search info for the last time after breaking from a search
     if (masterThread) reportSearchInfo(thread->threads);
 
     return NULL;

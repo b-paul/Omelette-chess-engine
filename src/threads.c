@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+// Zero out values of the thread
 Thread *initThreads(int threadCount, tTable *tt, HistoryTable *hTable) {
     Thread *threads = malloc(sizeof(Thread) * threadCount);
 
@@ -22,6 +23,7 @@ Thread *initThreads(int threadCount, tTable *tt, HistoryTable *hTable) {
     return threads;
 }
 
+// Zero out values of the thread used in the search
 void initThreadSearch(Thread *threads, Pos board, Search info) {
     for (int i = 0; i < threads[0].threadCount; i++) {
         threads[i].nodes = 0;

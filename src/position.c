@@ -89,8 +89,8 @@ void resetBoard(Pos* board) {
 }
 
 void printBoard(Pos board) {
-    for (int rank = RANK_8; rank >= RANK_1; rank--) {
-        for (int file = FILE_A; file < FILE_CNT; file++) {
+    for (Rank rank = RANK_8; rank >= RANK_1; rank--) {
+        for (File file = FILE_A; file < FILE_CNT; file++) {
             // For each square, print based on the piece
             switch(board.pieceList[sq(file, rank)]) {
                 case wP: printf("P"); break;
@@ -115,14 +115,14 @@ void printBoard(Pos board) {
 
 
 
-Bitboard sliderBlockers(Pos board, int square) {
+Bitboard sliderBlockers(Pos board, Square square) {
         Bitboard result = 0ull;
 
         Bitboard sliders = ((bPseudoAttacks[square] & (board.pieces[BISHOP] | board.pieces[QUEEN])) |
                                     (rPseudoAttacks[square] & (board.pieces[ROOK] | board.pieces[QUEEN]))) & board.sides[!board.turn];
         Bitboard occ = (board.pieces[WHITE] | board.pieces[BLACK]) ^ sliders;
         while (sliders) {
-                int sliderSquare = poplsb(&sliders);
+                Square sliderSquare = poplsb(&sliders);
                 Bitboard betweenSqs = betweenBB(square, sliderSquare) & occ; 
                 if (betweenSqs && moreOneBit(betweenSqs)) {
                         result |= betweenSqs;
@@ -176,8 +176,8 @@ int makeMove(Pos* board, Move *move) {
     board->history[board->plyLength++] = board->hash;
 
     // First and second 6 bits
-    int from = moveFrom(move);
-    int to = moveTo(move);
+    Square from = moveFrom(move);
+    Square to = moveTo(move);
     Bitboard tobb = 1ULL << to;
     Bitboard frombb = 1ULL << from;
     Bitboard toFrom = frombb | tobb;
@@ -188,15 +188,15 @@ int makeMove(Pos* board, Move *move) {
 
     assert(board->pieces[KING] & board->sides[board->turn]);
 
-    int piece = board->pieceList[from];
+    Piece piece = board->pieceList[from];
 
     int pushDir = (board->turn) ? -8 : 8;
 
     if (moveType(move) == CASTLE) {
 
-        int rookTo = sq((to > from) ? 5 : 3, rank(to));
-        int rookFrom = sq((to > from) ? 7 : 0, rank(to));
-        int rookPiece = (board->turn) ? bR : wR;
+        Square rookTo = sq((to > from) ? 5 : 3, rank(to));
+        Square rookFrom = sq((to > from) ? 7 : 0, rank(to));
+        Piece rookPiece = (board->turn) ? bR : wR;
         Bitboard rToFrom = (1ULL << rookTo) | (1ULL << rookFrom);
 
         board->pieces[ROOK] ^= rToFrom;
@@ -212,7 +212,7 @@ int makeMove(Pos* board, Move *move) {
 
         assert(pieceType(piece) == PAWN);
 
-        int promote = promotePiece(move);
+        PieceType promote = promotePiece(move);
 
         board->hash ^= zobristPieces[from][piece];
         board->psqtScore -= PSQT[piece][from];
@@ -236,7 +236,7 @@ int makeMove(Pos* board, Move *move) {
     
     if (moveType(move) == ENPAS) {
 
-        int capSq = to - pushDir;
+        Square capSq = to - pushDir;
 
         assert(pieceType(piece) == PAWN);
         // The captured piece is a pawn
@@ -317,20 +317,20 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
     board->plyLength--;
 
     // First and secont 6 bits
-    int from = moveFrom(move);
-    int to = moveTo(move);
+    Square from = moveFrom(move);
+    Square to = moveTo(move);
     Bitboard tobb = 1ULL << to;
     Bitboard toFrom = (1ULL << from) | tobb;
 
-    int piece = board->pieceList[to];
+    Piece piece = board->pieceList[to];
 
     board->turn = !board->turn;
 
     if (moveType(move) == CASTLE) {
 
-        int rookTo = sq((to > from) ? 5 : 3, rank(to));
-        int rookFrom = sq((to > from) ? 7 : 0, rank(to));
-        int rookPiece = (board->turn) ? bR : wR;
+        Square rookTo = sq((to > from) ? 5 : 3, rank(to));
+        Square rookFrom = sq((to > from) ? 7 : 0, rank(to));
+        Piece rookPiece = (board->turn) ? bR : wR;
         Bitboard rToFrom = (1ULL << rookTo) | (1ULL << rookFrom);
 
         board->pieces[ROOK] ^= rToFrom;
@@ -342,7 +342,7 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
 
         assert(pieceType(piece) != PAWN);
 
-        int promote = promotePiece(move);
+        PieceType promote = promotePiece(move);
         
         piece -= (promote - 1);
 
@@ -360,7 +360,7 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
 
         int pushDir = (board->turn) ? 8 : -8;
         Bitboard epBB = shift(tobb, pushDir); 
-        int capSq = to + pushDir;
+        Square capSq = to + pushDir;
         board->pieceList[capSq] = move->lastCapture;
         board->pieces[PAWN] ^= epBB;
         board->sides[!board->turn] ^= epBB;
