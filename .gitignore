@@ -1,2 +1,4 @@
 omelette
 *.o
+cutechess-cli
+games.pgn
