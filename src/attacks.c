@@ -49,7 +49,7 @@ Bitboard sliderAttack(int sq, Bitboard occ, int Direction[4]) {
     Bitboard result = 0ULL;
     for (int i = 0; i < 4; i++) {
         for (int square = sq + Direction[i]; validSquare(square) &&
-        (distance(square, square - Direction[i]) == 1); square += Direction[i]) {
+            (distance(square, square - Direction[i]) == 1); square += Direction[i]) {
             setBit(&result, square);
             if (occ & (1ULL << square)) break;
         }
@@ -60,7 +60,7 @@ Bitboard sliderAttack(int sq, Bitboard occ, int Direction[4]) {
 void initSlider(int sq, Magic* list, Bitboard magic, int Direction[4]) {
     // Used with the mask
     Bitboard edges = ((bbRank(RANK_1) | bbRank(RANK_8)) & ~bbRank(rank(sq)))
-                                     | ((bbFile(FILE_A) | bbFile(FILE_H)) & ~bbFile(file(sq)));
+                                      | ((bbFile(FILE_A) | bbFile(FILE_H)) & ~bbFile(file(sq)));
 
     Bitboard occ = 0ULL;
 
