@@ -3,26 +3,29 @@ CC = gcc
 EXE = omelette
 DEBUGEXE = omelette_debug
 
-PEXTFLAGS = #-DUSE_PEXT -mbmi2
-CFLAGS = -std=gnu11 -Wall -O3 -fcommon -flto -g -pthread -lm $(PEXTFLAGS) -DNDEBUG #-p -pg
-DEBUGFLAGS = -std=gnu11 -Wall -O0
+PEXTFLAGS = -DUSE_PEXT -mbmi2
+CFLAGS = -std=gnu11 -Wall -O3 -fcommon -flto -g -pthread -lm -DNDEBUG
+TFLAGS = -std=gnu11 -Wall -O3 -fcommon -flto -g -pthread -lm -DNDEBUG -DTUNE
+PFLAGS = $(CFLAGS) $(PEXTFLAGS)
+DFLAGS = -std=gnu11 -Wall -O0 -fcommon -flto -g -pthread -lm
+PFLAGS = -std=gnu11 -Wall -O3 -fcommon -flto -g -pthread -lm -DNDEBUG -p -pg
 
-OBJ = attacks.o bitboards.o evaluate.o main.o movegen.o movepicker.o position.o search.o threads.o time.o tt.o uci.o fathom/tbprobe.c
+OBJ = *.c fathom/tbprobe.c
 
-$(EXE): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) -lm
-
-$(DEBUGEXE): $(OBJ)
-	$(CC) $(DEBUGFLAGS) -o $@ $(OBJ)
-
-
-.PHONY:	clean build debug
+.PHONY:	clean build debug profile tune
 
 clean:
 	-rm *.o
 
 build:
-	$(EXE)
+	$(CC) $(CFLAGS) -o omelette $(OBJ) -lm
 
 debug:
-	$(DEBUGEXE)
+	$(CC) $(DFLAGS) -o omelette $(OBJ) -lm
+
+profile:
+	$(CC) $(CFLAGS) -o omelette $(OBJ) -lm
+
+tune:
+	$(CC) $(TFLAGS) -o omelette $(OBJ) -lm
+
