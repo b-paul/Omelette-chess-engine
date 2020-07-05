@@ -12,8 +12,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-double sigmoid(double K, double S) {
+double sigmoid(double S, double K) {
     return 1.0/(1.0+exp(-K*S/400.0));
+}
+
+double fullError(TuneEntry *entries, double K) {
+    double r = 0;
+    for (int i = 0; i < ENTRY_CNT; i++) {
+        r += SQUARED(entries[i].result - sigmoid(entries[i].eval, K));
+    }
+    return (1.0/ENTRY_CNT) * r;
+}
+
+double computeK(TuneEntry *entries) {
+    double start = -10.0, end = 10.0, delta = 1.0;
+    double curr = start, err , best = fullError(entries, start);
+
+    for (int i = 0; i < K_PRECISION; i++) {
+        curr = start - delta;
+
+        while (curr < end) {
+            curr += delta;
+            err = fullError(entries, curr);
+            if (err <= best) {
+                best = err;
+                start = curr;
+            }
+        }
+
+        end = start + delta;
+        start -= delta;
+        delta /= 10.0;
+    }
+
+    return start;
 }
 
 void initEntries(TuneEntry *entries, Thread *thread) {

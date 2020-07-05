@@ -6,6 +6,7 @@ typedef unsigned long long Key;
 #define MAX(a, b) (((a) > (b)) ? a : b)
 #define MIN(a, b) (((a) < (b)) ? a : b)
 #define CLAMP(a, b, c) (MIN((a), MAX((b), (c))))
+#define SQUARED(a) (a)*(a)
 
 #define WDL_WIN 31256
 

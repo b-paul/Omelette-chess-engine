@@ -20,7 +20,7 @@ void initHistoryTable(HistoryTable *table) {
 }
 
 void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, int depth, int height) {
-    int bonus = depth*depth;
+    int bonus = SQUARED(depth);
     table->historyScores[board->turn][moveFrom(move)][moveTo(move)] += bonus;
 
     if (table->killers[height][0].value != move->value) {
