@@ -6,6 +6,7 @@
 #include "movegen.h"
 #include "types.h"
 
+Bitboard randBB();
 void initZobrist();
 void initPosition();
 void resetBoard(Pos* board);

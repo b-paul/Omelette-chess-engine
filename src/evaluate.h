@@ -9,6 +9,7 @@
 #define egS(eg) ((int16_t)((uint16_t)(((unsigned)(eg) + 0x8000)>>16)))
 
 void initEval();
+int phase(Pos *board);
 int evaluate(Pos *board);
 
-extern int PSQT[PIECE_CNT][SQ_CNT];
+extern int PSQT[PIECE_TYPE_CNT][SQ_CNT];

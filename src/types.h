@@ -84,8 +84,13 @@ enum MoveFlags {
 };
 
 enum Moves {
-        NO_MOVE,
-        NULL_MOVE = 65,
+    NO_MOVE,
+    NULL_MOVE = 65,
+};
+
+enum Phase {
+    MG, EG,
+    PHASE_CNT
 };
 
 typedef struct goArgs goArgs;

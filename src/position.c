@@ -14,9 +14,9 @@ Key zobristTurn;
 Bitboard randBB() {
     static Key seed = 23409839408ULL;
 
-    seed ^= seed >> 35;
+    seed ^= seed >> 20;
     seed ^= seed << 12;
-    seed ^= seed >> 53;
+    seed ^= seed >> 28;
 
     return seed * 7163392348326487ull;
 }
