@@ -12,10 +12,7 @@ PFLAGS = -std=gnu11 -Wall -O3 -fcommon -flto -g -pthread -lm -DNDEBUG -p -pg
 
 OBJ = *.c fathom/tbprobe.c
 
-.PHONY:	clean build debug profile tune
-
-clean:
-	-rm *.o
+.PHONY:	build debug profile tune clean 
 
 build:
 	$(CC) $(CFLAGS) -o omelette $(OBJ) -lm
@@ -28,4 +25,7 @@ profile:
 
 tune:
 	$(CC) $(TFLAGS) -o omelette $(OBJ) -lm
+
+clean:
+	-rm *.o
 

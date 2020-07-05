@@ -4,7 +4,6 @@
 #include "bitboards.h"
 #include "evaluate.h"
 #include "movegen.h"
-#include "position.h"
 #include "types.h"
 
 void initZobrist();
@@ -59,11 +58,6 @@ struct Undo {
 // Is check
 // side is the side to check
 static inline Bitboard squareAttackers(Pos *board, int sq, int side) {
-    if (sq > 63) {
-        printBoard(*board);
-        printBitBoard(board->pieces[KING]);
-        printBitBoard(board->sides[side]);
-    }
     Bitboard them = board->sides[!side];
     Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
 
