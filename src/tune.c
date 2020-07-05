@@ -16,21 +16,46 @@
 extern int materialBonus[PIECE_TYPE_CNT];
 extern int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2];
 
+void printParams(Params params) {
+    printf("int materialBonus[PIECE_TYPE_CNT] = {\n");
+    printf("    0,\n");
+    for (int i = 0; i < 5; i++) {
+        printf("    S(%d, %d),\n", 
+                mgS(materialBonus[i+1]) + params[i][MG], 
+                egS(materialBonus[i+1]) + params[i][EG]);
+    }
+    printf("    S(0, 0)\n};\n\n");
+    printf("int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {\n");
+    printf("    {\n");
+    for (int p = 1; p < 6; p++) {
+        printf("    }, {\n");
+        for (int r = 0; r < RANK_CNT; r++) {
+            printf("    {");
+            for (int f = 0; f < FILE_CNT/2; f++)
+                printf("S(%d, %d), ",
+                        mgS(PSQTBonus[p][r][f]) + params[5+(32*p)+(4*r)+f][MG],
+                        egS(PSQTBonus[p][r][f]) + params[5+(32*p)+(4*r)+f][EG]);
+            printf("},\n");
+        }
+    }
+    printf("};\n");
+}
+
 double sigmoid(double S, double K) {
     return 1.0/(1.0+exp(-K*S/400.0));
 }
 
-int newEval(TuneEntry *entry, int params[PARAM_CNT][PHASE_CNT]) {
+int newEval(TuneEntry *entry, Params params) {
     int mg = 0, eg = 0;
     for (int i = 0; i < PARAM_CNT; i++) {
         mg += params[i][MG] * entry->evalDiff[i][MG];
         eg += params[i][EG] * entry->evalDiff[i][EG];
     }
     int result = ((mg * (256 - entry->phase)) + (eg * (entry->phase)))/256;
-    return entry->eval + (board->turn == WHITE ? result : -result);
+    return entry->eval + (entry->turn == WHITE ? result : -result);
 }
 
-double newFullError(TuneEntry *entries, int params[PARAM_CNT][PHASE_CNT], double K) {
+double newFullError(TuneEntry *entries, Params params, double K) {
     double r = 0;
     for (int i = 0; i < ENTRY_CNT; i++) {
         r += SQUARED(entries[i].result - sigmoid(newEval(&entries[i], params), K));
@@ -114,6 +139,7 @@ void initEntries(TuneEntry *entries, Thread *thread) {
         parseFen(str, &board);
         entries[i].eval = evaluate(&board);
         entries[i].phase = phase(&board);
+        entries[i].turn = board.turn;
 
         if (strstr(str, "[1.0]")) entries[i].result = 1.0;
         else if (strstr(str, "[0.5]")) entries[i].result = 0.5;
@@ -134,6 +160,13 @@ void initEntries(TuneEntry *entries, Thread *thread) {
     fclose(f);
 }
 
+void initParams(Params params) {
+    for (int i = 0; i < PARAM_CNT; i++) {
+        params[i][MG] = 0;
+        params[i][EG] = 0;
+    }
+}
+
 void runTexelTuning(int threadCnt) {
     HistoryTable hTable;
     initHistoryTable(&hTable);
@@ -142,7 +175,8 @@ void runTexelTuning(int threadCnt) {
     Thread *threads = initThreads(threadCnt, &tt, &hTable);
 
     TuneEntry *entries = (TuneEntry*)calloc(ENTRY_CNT, sizeof(TuneEntry));
-    int params[PARAM_CNT][PHASE_CNT];
+    Params params;
+    initParams(params);
 
     // Init rng
     srand(time(0));

@@ -10,12 +10,15 @@
 
 #include "types.h"
 
+typedef int Params[PARAM_CNT][PHASE_CNT];
+
 struct TuneEntry {
     float result;
     int eval;
     int phase;
+    int turn;
 
-    int evalDiff[PARAM_CNT][PHASE_CNT];
+    Params evalDiff;
 };
 
 void runTexelTuning(int threadCnt);
