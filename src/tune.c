@@ -99,7 +99,7 @@ void shuffleEntries(TuneEntry *entries) {
     TuneEntry temp;
 
     for (int i = 0; i < ENTRY_CNT; i++) {
-        int r = randBB() % ENTRY_CNT;
+        int r = (randBB() % (ENTRY_CNT - i)) + i;
 
         temp = entries[i];
         entries[i] = entries[r];
