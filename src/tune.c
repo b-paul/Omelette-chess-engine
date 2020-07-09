@@ -21,8 +21,8 @@ void printParams(Params params) {
     printf("    0,\n");
     for (int i = 0; i < 5; i++) {
         printf("    S(%d, %d),\n", 
-                mgS(materialBonus[i+1]) + params[i][MG], 
-                egS(materialBonus[i+1]) + params[i][EG]);
+                mgS(materialBonus[i+1]) + (int)params[i][MG], 
+                egS(materialBonus[i+1]) + (int)params[i][EG]);
     }
     printf("    S(0, 0)\n};\n\n");
     printf("int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {\n");
@@ -33,12 +33,13 @@ void printParams(Params params) {
             printf("    {");
             for (int f = 0; f < FILE_CNT/2; f++)
                 printf("S(%d, %d), ",
-                        mgS(PSQTBonus[p][r][f]) + params[5+(32*p)+(4*r)+f][MG],
-                        egS(PSQTBonus[p][r][f]) + params[5+(32*p)+(4*r)+f][EG]);
+                        mgS(PSQTBonus[p][r][f]) + (int)params[5+(32*p)+(4*r)+f][MG],
+                        egS(PSQTBonus[p][r][f]) + (int)params[5+(32*p)+(4*r)+f][EG]);
             printf("},\n");
         }
     }
     printf("};\n");
+
 }
 
 double sigmoid(double S, double K) {
@@ -48,11 +49,17 @@ double sigmoid(double S, double K) {
 int newEval(TuneEntry *entry, Params params) {
     int mg = 0, eg = 0;
     for (int i = 0; i < PARAM_CNT; i++) {
-        mg += params[i][MG] * entry->evalDiff[i][MG];
-        eg += params[i][EG] * entry->evalDiff[i][EG];
+        //mg += params[i][MG] * entry->evalDiff[i][MG];
+        //eg += params[i][EG] * entry->evalDiff[i][EG];
     }
     int result = ((mg * (256 - entry->phase)) + (eg * (entry->phase)))/256;
     return entry->eval + (entry->turn == WHITE ? result : -result);
+}
+
+double newSingleError(TuneEntry *entry, Params params, double K) {
+    double s = sigmoid(K, newEval(entry, params));
+    double sPrime = s * (1-s);
+    return (entry->result - s) * sPrime;
 }
 
 double newFullError(TuneEntry *entries, Params params, double K) {
@@ -107,22 +114,61 @@ void shuffleEntries(TuneEntry *entries) {
     }
 }
 
-int *getParam(int paramIdx) {
+int getParam(int paramIdx) {
     assert(paramIdx > PARAM_CNT);
     if (paramIdx - 5 < 0) {
-        return &materialBonus[paramIdx+1];
+        return materialBonus[paramIdx+1];
     }
     paramIdx -= 5;
     if (paramIdx - 192 < 0) {
         int piece = (paramIdx / 32) + 1;
         int file = (paramIdx % 32) / 4;
         int rank = (paramIdx % 4);
-        return &PSQTBonus[piece][rank][file];
+        return PSQTBonus[piece][rank][file];
     }
 
     // If something goes wrong, return pawn material
     assert(0);
-    return &materialBonus[PAWN];
+    return materialBonus[PAWN];
+}
+
+void updateParams(TuneEntry *entries, Params params, double K, int batch) {
+    Params grad = {0};
+    double err;
+
+    // Iterate over each position in the mini-batch
+    for (int i = batch * BATCH_SIZE; i < (batch + 1); i++) {
+        err = newSingleError(&entries[i], params, K);
+
+        for (int j = 0; j < PARAM_CNT; j++) {
+            for (int k = MG; k <= MG; k++) {
+                //if (entries[i].evalDiff[j][k] == 0) continue;
+                //grad[j][k] += err * entries[i].factors[k] * entries[i].evalDiff[j][k];
+            }
+        }
+    }
+
+    for (int i = 0; i < PARAM_CNT; i++) {
+        for (int j = MG; j <= MG; j++) {
+            params[i][j] += (2.0 / BATCH_SIZE) * LEARNING_RATE * grad[i][j];
+        }
+    }
+}
+
+void updateRealEvalParam(int index, int value) {
+    if (index - 5 < 0) {
+        materialBonus[index+1] = value;
+        return;
+    }
+    index -= 5;
+    if (index - 192 < 0) {
+        int piece = (index / 32) + 1;
+        int file = (index % 32) / 4;
+        int rank = (index % 4);
+        PSQTBonus[piece][rank][file] = value;
+        return;
+    }
+
 }
 
 void initEntries(TuneEntry *entries, Thread *thread) {
@@ -141,30 +187,17 @@ void initEntries(TuneEntry *entries, Thread *thread) {
         entries[i].phase = phase(&board);
         entries[i].turn = board.turn;
 
+        entries[i].factors[MG] = 1 - entries[i].phase / 24.0;
+        entries[i].factors[EG] = entries[i].phase / 24.0;
+
         if (strstr(str, "[1.0]")) entries[i].result = 1.0;
         else if (strstr(str, "[0.5]")) entries[i].result = 0.5;
         else if (strstr(str, "[0.0]")) entries[i].result = 0.0;
         else {
             printf("Invalid score at line %d of file %s\n", i, PATH_TO_FENS);
         }
-
-        for (j = 0; j < PARAM_CNT; j++) {
-            int *param = getParam(j);
-            *param = S(mgS(*param)+1, egS(*param));
-            entries[i].evalDiff[j][MG] = entries[i].eval - evaluate(&board);
-            *param = S(mgS(*param)-1, egS(*param)+1);
-            entries[i].evalDiff[j][EG] = entries[i].eval - evaluate(&board);
-            *param = S(mgS(*param), egS(*param)-1);
-        }
     }
     fclose(f);
-}
-
-void initParams(Params params) {
-    for (int i = 0; i < PARAM_CNT; i++) {
-        params[i][MG] = 0;
-        params[i][EG] = 0;
-    }
 }
 
 void runTexelTuning(int threadCnt) {
@@ -175,21 +208,30 @@ void runTexelTuning(int threadCnt) {
     Thread *threads = initThreads(threadCnt, &tt, &hTable);
 
     TuneEntry *entries = (TuneEntry*)calloc(ENTRY_CNT, sizeof(TuneEntry));
-    Params params;
-    initParams(params);
+    Params params = {0};
 
     // Init rng
     srand(time(0));
 
     initEntries(entries, threads);
 
-    const double k = computeK(entries);
+    const double K = computeK(entries);
+
+    int iterations = 0;
 
     while (1) {
+        iterations++;
+
+        if ((iterations % 100) == 0) printParams(params);
+        printf("Error=%lf\n", newFullError(entries, params, K));
+
         shuffleEntries(entries);
 
         // Loop through all positions in batches
         for (int batch = 0; batch < ENTRY_CNT/BATCH_SIZE; batch++) {
+
+            updateParams(entries, params, K, batch);
+
         }
     }
 }
