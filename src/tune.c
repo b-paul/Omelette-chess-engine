@@ -1,3 +1,8 @@
+// A lot of the code for tuning is from ethereal
+// Credit to them
+// I decided to do this over a python script because
+// I like having everything internal
+
 #ifdef TUNE
 
 #include "evaluate.h"
