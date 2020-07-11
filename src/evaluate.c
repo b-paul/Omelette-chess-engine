@@ -72,7 +72,7 @@ int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
     }, 
 };
 
-int PSQT[PIECE_TYPE_CNT][SQ_CNT];
+int PSQT[PIECE_CNT][SQ_CNT];
 
 int bishopPairBonus = S(20, 50);
 

@@ -12,4 +12,4 @@ void initEval();
 int phase(Pos *board);
 int evaluate(Pos *board);
 
-extern int PSQT[PIECE_TYPE_CNT][SQ_CNT];
+extern int PSQT[PIECE_CNT][SQ_CNT];
