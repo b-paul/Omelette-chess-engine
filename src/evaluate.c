@@ -13,9 +13,7 @@ int materialBonus[PIECE_TYPE_CNT] = {
     S(0,0)       // King
 };
 
-int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
-    {},
-    { // Pawns
+int pawnPSQT[RANK_CNT][FILE_CNT/2] = {
         {S(0,0), S(0,0), S(0,0), S(0,0)},
         {S(10,-10), S(-5,-10), S(-8,-10), S(-20,-10)},
         {S(0,-10), S(-2,-10), S(2,-10), S(-5,-10)},
@@ -24,7 +22,9 @@ int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
         {S(12,30), S(12,30), S(18,30), S(35,30)},
         {S(50,50), S(50,50), S(50,50), S(50,50)},
         {S(0,0), S(0,0), S(0,0), S(0,0)},
-    }, { // Knights
+};
+
+int knightPSQT[RANK_CNT][FILE_CNT/2] = {
         {S(-20,-10), S(-10,-10), S(-10,-10), S(-10,-10)},
         {S(-15,-10), S(-5,-5), S(-5,-5), S(10,0)},
         {S(-15,-10), S(-5,-5), S(30,5), S(25,10)},
@@ -33,7 +33,9 @@ int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
         {S(-10,-10), S(-5,-5), S(20,5), S(20,0)},
         {S(-10,-10), S(-5,-5), S(-10,-50), S(-10,10)},
         {S(-10,-10), S(-10,-10), S(-10,-10), S(-10,-10)},
-    }, { // Bishops
+};
+
+int bishopPSQT[RANK_CNT][FILE_CNT/2] = {
         {S(-20,-10), S(-18,-10), S(-10,-10), S(-18,-10)},
         {S(-20,-10), S(25,-8), S(-8,-8), S(15,-8)},
         {S(-20,-10), S(-5,-8), S(10,0), S(20,0)},
@@ -42,7 +44,9 @@ int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
         {S(-20,-10), S(-5,-8), S(8,0), S(10,0)},
         {S(-20,-10), S(-5,-8), S(-5,-8), S(-5,0)},
         {S(-20,-10), S(-20,-10), S(-20,-10), S(-20,-10)},
-    }, { // Rooks
+};
+
+int rookPSQT[RANK_CNT][FILE_CNT/2] = {
         {S(-30,-20), S(-30,-18), S(5,-17), S(15,-15)},
         {S(-15,-18), S(-20,-16), S(-10,-15), S(5,-13)},
         {S(-10,-16), S(-9,-14), S(-5,-13), S(3,-11)},
@@ -51,7 +55,9 @@ int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
         {S(8,0), S(6,0), S(4,0), S(1,0)},
         {S(15,20), S(15,20), S(15,20), S(15,20)},
         {S(8,16), S(12,16), S(15,16), S(18,16)},
-    }, { // Queens
+};
+
+int queenPSQT[RANK_CNT][FILE_CNT/2] = {
         {S(4,-50), S(4,-50), S(4,-50), S(0,-50)},
         {S(-5,-50), S(-1,-30), S(2,-30), S(5,-30)},
         {S(-8,-50), S(-20,-30), S(4,-10), S(5,-10)},
@@ -60,7 +66,9 @@ int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
         {S(-15,-50), S(-9,-30), S(-7,-10), S(-5,-10)},
         {S(-16,-50), S(-10,-30), S(-8,-30), S(-6,-30)},
         {S(-18,-50), S(-15,-50), S(-11,-50), S(-5,-50)},
-    }, { // King
+};
+
+int kingPSQT[RANK_CNT][FILE_CNT/2] = {
         {S(55,-50), S(50,-50), S(30,-50), S(30,-50)},
         {S(-10,-50), S(-10,-30), S(-10,-30), S(-10,-30)},
         {S(-20,-50), S(-20,-30), S(-20,-10), S(-20,-10)},
@@ -69,7 +77,6 @@ int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {
         {S(-50,-50), S(-50,-30), S(-50,-10), S(-50,-10)},
         {S(-60,-50), S(-60,-30), S(-60,-30), S(-60,-30)},
         {S(-70,-50), S(-70,-50), S(-70,-50), S(-70,-50)},
-    }, 
 };
 
 int PSQT[PIECE_CNT][SQ_CNT];
@@ -83,19 +90,19 @@ void initEval() {
         int r = rank(i);
         int f = (file(i)>3 ? 7-file(i) : file(i));
 
-        PSQT[wP][i] = materialBonus[PAWN] + PSQTBonus[PAWN][r][f];
-        PSQT[wN][i] = materialBonus[KNIGHT] + PSQTBonus[KNIGHT][r][f];
-        PSQT[wB][i] = materialBonus[BISHOP] + PSQTBonus[BISHOP][r][f];
-        PSQT[wR][i] = materialBonus[ROOK] + PSQTBonus[ROOK][r][f];
-        PSQT[wQ][i] = materialBonus[QUEEN] + PSQTBonus[QUEEN][r][f];
-        PSQT[wK][i] = materialBonus[KING] + PSQTBonus[KING][r][f];
+        PSQT[wP][i] = materialBonus[PAWN] + pawnPSQT[r][f];
+        PSQT[wN][i] = materialBonus[KNIGHT] + knightPSQT[r][f];
+        PSQT[wB][i] = materialBonus[BISHOP] + bishopPSQT[r][f];
+        PSQT[wR][i] = materialBonus[ROOK] + rookPSQT[r][f];
+        PSQT[wQ][i] = materialBonus[QUEEN] + queenPSQT[r][f];
+        PSQT[wK][i] = materialBonus[KING] + kingPSQT[r][f];
 
-        PSQT[bP][i] = -materialBonus[PAWN] - PSQTBonus[PAWN][7-r][f];
-        PSQT[bN][i] = -materialBonus[KNIGHT] - PSQTBonus[KNIGHT][7-r][f];
-        PSQT[bB][i] = -materialBonus[BISHOP] - PSQTBonus[BISHOP][7-r][f];
-        PSQT[bR][i] = -materialBonus[ROOK] - PSQTBonus[ROOK][7-r][f];
-        PSQT[bQ][i] = -materialBonus[QUEEN] - PSQTBonus[QUEEN][7-r][f];
-        PSQT[bK][i] = -materialBonus[KING] - PSQTBonus[KING][7-r][f];
+        PSQT[bP][i] = -materialBonus[PAWN] - pawnPSQT[7-r][f];
+        PSQT[bN][i] = -materialBonus[KNIGHT] - knightPSQT[7-r][f];
+        PSQT[bB][i] = -materialBonus[BISHOP] - bishopPSQT[7-r][f];
+        PSQT[bR][i] = -materialBonus[ROOK] - rookPSQT[7-r][f];
+        PSQT[bQ][i] = -materialBonus[QUEEN] - queenPSQT[7-r][f];
+        PSQT[bK][i] = -materialBonus[KING] - kingPSQT[7-r][f];
     }
 }
 

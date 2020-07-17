@@ -19,7 +19,12 @@
 #include <time.h>
 
 extern int materialBonus[PIECE_TYPE_CNT];
-extern int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2];
+extern int pawnPSQT[RANK_CNT][FILE_CNT/2];
+extern int knightPSQT[RANK_CNT][FILE_CNT/2];
+extern int bishopPSQT[RANK_CNT][FILE_CNT/2];
+extern int rookPSQT[RANK_CNT][FILE_CNT/2];
+extern int queenPSQT[RANK_CNT][FILE_CNT/2];
+extern int kingPSQT[RANK_CNT][FILE_CNT/2];
 
 void printParams(Params params) {
     printf("int materialBonus[PIECE_TYPE_CNT] = {\n");
@@ -30,6 +35,7 @@ void printParams(Params params) {
                 egS(materialBonus[i+1]) + (int)params[i][EG]);
     }
     printf("    S(0, 0)\n};\n\n");
+/*
     printf("int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {\n");
     printf("    {\n");
     for (int p = 1; p < 6; p++) {
@@ -44,7 +50,7 @@ void printParams(Params params) {
         }
     }
     printf("};\n");
-
+*/
 }
 
 double sigmoid(double S, double K) {
