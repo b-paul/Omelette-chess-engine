@@ -50,6 +50,22 @@ struct TuneEntry {
 
 void runTexelTuning(int threadCnt);
 
+#define INIT_PARAMS_0(term, S) do { \
+    cparams[i][MG] = mgS(term); \
+    cparams[i++][EG] = egS(term); \
+} while(0)
+
+#define INIT_PARAMS_1(term, A, S) do { \
+    for (int _a = 0; _a < A; _a++){ \
+        cparams[i][MG] = mgS(term[_a]); \
+        cparams[i++][EG] = egS(term[_a]);} \
+} while(0)
+
+#define INIT_PARAMS_2(term, A, B, S) do { \
+    for (int _b = 0; _b < A; _b++) \
+        INIT_PARAMS_1(term[_b], B, S); \
+} while(0)
+
 #define INIT_COEFFS_0(term, S) do { \
     coeffs[i++] = T.term[WHITE] - T.term[BLACK]; \
 } while(0)
@@ -63,6 +79,12 @@ void runTexelTuning(int threadCnt);
     for (int _b = 0; _b < A; _b++) \
         INIT_COEFFS_1(term[_b], B, S); \
 } while(0)
+
+#define PRINT_PARAMS_0(term, S) (print0(#term, tparams, i, S), i++)
+
+#define PRINT_PARAMS_1(term, A, S) (print1(#term, tparams, i, A, S), i+=A)
+
+#define PRINT_PARAMS_2(term, A, B, S) (print2(#term, tparams, i, A, B, S), i+=A*B)
 
 #define ENABLE_0(F, term, S) do { \
     if (Tune##term) F##_0(term, S); \

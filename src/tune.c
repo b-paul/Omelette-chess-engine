@@ -36,6 +36,48 @@ extern EvalTrace T, emptyTrace;
 TuneTuple *TupleStack;
 int TupleStackSize = STACKSIZE;
 
+void print0(char *name, int params[PARAM_CNT][PHASE_CNT], int i, char *S) {
+    printf("int %s%s = S(%d, %d);\n\n", name, S, params[i][MG], params[i][EG]);
+}
+
+void print1(char *name, int params[PARAM_CNT][PHASE_CNT], int i, int A, char *S) {
+    printf("int %s%s = {\n    ", name, S);
+    for (int a = 0; a < A; a++, i++)
+        printf("S(%d, %d), ", params[i][MG], params[i][EG]);
+    printf("\n};\n\n");
+}
+
+void print2(char *name, int params[PARAM_CNT][PHASE_CNT], int i, int A, int B, char *S) {
+    printf("int %s%s = {\n", name, S);
+
+    for (int a = 0; a < A; a++) {
+        printf("    {");
+
+        for (int b = 0; b < B; b++, i++)
+            printf("S(%d, %d), ", params[i][MG], params[i][EG]);
+
+        printf("},\n");
+    }
+
+    printf("\n};\n\n");
+}
+
+void printParams(Params params, Params cparams) {
+    int tparams[PARAM_CNT][PHASE_CNT];
+
+    for (int j = 0; j < PARAM_CNT; j++)
+        for (int k = MG; k <= EG; k++)
+            tparams[j][k] = params[j][k] + cparams[j][k];
+
+    int i = 0;
+    EXECUTE_ON_PARAMS(PRINT_PARAMS);
+
+    if (i != PARAM_CNT) {
+        printf("error printing parameters\n");
+        exit(0);
+    }
+}
+
 double sigmoid(double S, double K) {
     return 1.0/(1.0+exp(-K*S/400.0));
 }
@@ -154,6 +196,17 @@ void initCoeffs(int coeffs[PARAM_CNT]) {
     }
 }
 
+void initParams(Params cparams) {
+    int i = 0;
+
+    EXECUTE_ON_PARAMS(INIT_PARAMS);
+
+    if (i != PARAM_CNT) {
+        printf("error initializing paramaters\n");
+        exit(0);
+    }
+}
+
 void initEntries(TuneEntry *entries, Thread *thread) {
     char str[256];
     FILE *f = fopen(PATH_TO_FENS, "r");
@@ -214,7 +267,7 @@ void runTexelTuning(int threadCnt) {
     Thread *threads = initThreads(threadCnt, &tt, &hTable);
 
     TuneEntry *entries = (TuneEntry*)calloc(ENTRY_CNT, sizeof(TuneEntry));
-    Params params = {0};
+    Params cparams, params = {0};
 
     double error, best = 999999, rate = LEARNING_RATE;
 
@@ -222,6 +275,8 @@ void runTexelTuning(int threadCnt) {
     srand(time(0));
 
     TupleStack = calloc(STACKSIZE, sizeof(TuneTuple));
+
+    initParams(cparams);
 
     initEntries(entries, threads);
 
@@ -238,6 +293,7 @@ void runTexelTuning(int threadCnt) {
             if (error > best) rate /= LR_DROP_RATE;
 
             best = error;
+            printParams(params, cparams);
             printf("Iteration %d Error %lf\n", iterations, newFullError(entries, params, K));
         }
 
