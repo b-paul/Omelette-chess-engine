@@ -3,15 +3,15 @@
 #include "position.h"
 #include "types.h"
 
-int materialBonus[PIECE_TYPE_CNT] = {
-    0,
-    S(100, 150), // Pawns
-    S(300, 250), // Knights
-    S(325, 400), // Bishops
-    S(500, 600), // Rooks
-    S(900, 1100),// Queens
-    S(0,0)       // King
-};
+int pawnValue = S(100, 150);
+int knightValue = S(300, 250);
+int bishopValue = S(325, 400);
+int rookValue = S(500, 600);
+int queenValue = S(900, 1100);
+
+#ifdef TUNE
+EvalTrace T, emptyTrace;
+#endif
 
 int pawnPSQT[RANK_CNT][FILE_CNT/2] = {
         {S(0,0), S(0,0), S(0,0), S(0,0)},
@@ -88,30 +88,130 @@ void initEval() {
     // each psqt square
     for (int i = 0; i < SQ_CNT; i++) {
         int r = rank(i);
-        int f = (file(i)>3 ? 7-file(i) : file(i));
+        int f = relativeFile(i);
 
-        PSQT[wP][i] = materialBonus[PAWN] + pawnPSQT[r][f];
-        PSQT[wN][i] = materialBonus[KNIGHT] + knightPSQT[r][f];
-        PSQT[wB][i] = materialBonus[BISHOP] + bishopPSQT[r][f];
-        PSQT[wR][i] = materialBonus[ROOK] + rookPSQT[r][f];
-        PSQT[wQ][i] = materialBonus[QUEEN] + queenPSQT[r][f];
-        PSQT[wK][i] = materialBonus[KING] + kingPSQT[r][f];
+        PSQT[wP][i] = pawnValue + pawnPSQT[r][f];
+        PSQT[wN][i] = knightValue + knightPSQT[r][f];
+        PSQT[wB][i] = bishopValue + bishopPSQT[r][f];
+        PSQT[wR][i] = rookValue + rookPSQT[r][f];
+        PSQT[wQ][i] = queenValue + queenPSQT[r][f];
+        PSQT[wK][i] = kingPSQT[r][f];
 
-        PSQT[bP][i] = -materialBonus[PAWN] - pawnPSQT[7-r][f];
-        PSQT[bN][i] = -materialBonus[KNIGHT] - knightPSQT[7-r][f];
-        PSQT[bB][i] = -materialBonus[BISHOP] - bishopPSQT[7-r][f];
-        PSQT[bR][i] = -materialBonus[ROOK] - rookPSQT[7-r][f];
-        PSQT[bQ][i] = -materialBonus[QUEEN] - queenPSQT[7-r][f];
-        PSQT[bK][i] = -materialBonus[KING] - kingPSQT[7-r][f];
+        PSQT[bP][i] = -pawnValue - pawnPSQT[7-r][f];
+        PSQT[bN][i] = -knightValue - knightPSQT[7-r][f];
+        PSQT[bB][i] = -bishopValue - bishopPSQT[7-r][f];
+        PSQT[bR][i] = -rookValue - rookPSQT[7-r][f];
+        PSQT[bQ][i] = -queenValue - queenPSQT[7-r][f];
+        PSQT[bK][i] = kingPSQT[7-r][f];
     }
 }
+
+#ifdef TUNE
+void psqtEvalTrace(Pos *board) {
+    int sq, r, f;
+    Bitboard pieces = board->pieces[PAWN] & board->sides[WHITE];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.pawnValue[WHITE]++;
+        T.pawnPSQT[r][f][WHITE]++;
+    }
+    pieces = board->pieces[PAWN] & board->sides[BLACK];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.pawnValue[BLACK]++;
+        T.pawnPSQT[r][f][BLACK]++;
+    }
+    pieces = board->pieces[KNIGHT] & board->sides[WHITE];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.knightValue[WHITE]++;
+        T.knightPSQT[r][f][WHITE]++;
+    }
+    pieces = board->pieces[KNIGHT] & board->sides[BLACK];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.knightValue[BLACK]++;
+        T.knightPSQT[r][f][BLACK]++;
+    }
+    pieces = board->pieces[BISHOP] & board->sides[WHITE];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.bishopValue[WHITE]++;
+        T.bishopPSQT[r][f][WHITE]++;
+    }
+    pieces = board->pieces[BISHOP] & board->sides[BLACK];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.bishopValue[BLACK]++;
+        T.bishopPSQT[r][f][BLACK]++;
+    }
+    pieces = board->pieces[ROOK] & board->sides[WHITE];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.rookValue[WHITE]++;
+        T.rookPSQT[r][f][WHITE]++;
+    }
+    pieces = board->pieces[ROOK] & board->sides[BLACK];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.rookValue[BLACK]++;
+        T.rookPSQT[r][f][BLACK]++;
+    }
+    pieces = board->pieces[QUEEN] & board->sides[WHITE];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.queenValue[WHITE]++;
+        T.queenPSQT[r][f][WHITE]++;
+    }
+    pieces = board->pieces[QUEEN] & board->sides[BLACK];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.queenValue[BLACK]++;
+        T.queenPSQT[r][f][BLACK]++;
+    }
+    pieces = board->pieces[KING] & board->sides[WHITE];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.kingPSQT[r][f][WHITE]++;
+    }
+    pieces = board->pieces[KING] & board->sides[BLACK];
+    while (pieces) {
+        sq = poplsb(&pieces);
+        r = rank(sq);
+        f = relativeFile(sq);
+        T.kingPSQT[r][f][BLACK]++;
+    }
+}
+#endif
 
 int phase(Pos *board) {
     int p = 24;
     p -= popcnt(board->pieces[KNIGHT] | board->pieces[BISHOP]);
     p -= popcnt(board->pieces[ROOK]) * 2;
     p -= popcnt(board->pieces[QUEEN]) * 4;
-    return (p * 256 + 12)/12;
+    return (p * 256 + 12)/24;
 }
 
 // Evaluate a board position
@@ -120,6 +220,10 @@ int evaluate(Pos *board) {
     // Return value
 
     int result = 0;
+
+#ifdef TUNE
+    psqtEvalTrace(board);
+#endif
 
     result += board->psqtScore;
 

@@ -18,7 +18,12 @@
 #include <string.h>
 #include <time.h>
 
-extern int materialBonus[PIECE_TYPE_CNT];
+extern int pawnValue;
+extern int knightValue;
+extern int bishopValue;
+extern int rookValue;
+extern int queenValue;
+
 extern int pawnPSQT[RANK_CNT][FILE_CNT/2];
 extern int knightPSQT[RANK_CNT][FILE_CNT/2];
 extern int bishopPSQT[RANK_CNT][FILE_CNT/2];
@@ -26,32 +31,10 @@ extern int rookPSQT[RANK_CNT][FILE_CNT/2];
 extern int queenPSQT[RANK_CNT][FILE_CNT/2];
 extern int kingPSQT[RANK_CNT][FILE_CNT/2];
 
-void printParams(Params params) {
-    printf("int materialBonus[PIECE_TYPE_CNT] = {\n");
-    printf("    0,\n");
-    for (int i = 0; i < 5; i++) {
-        printf("    S(%d, %d),\n", 
-                mgS(materialBonus[i+1]) + (int)params[i][MG], 
-                egS(materialBonus[i+1]) + (int)params[i][EG]);
-    }
-    printf("    S(0, 0)\n};\n\n");
-/*
-    printf("int PSQTBonus[PIECE_TYPE_CNT][RANK_CNT][FILE_CNT/2] = {\n");
-    printf("    {\n");
-    for (int p = 1; p < 6; p++) {
-        printf("    }, {\n");
-        for (int r = 0; r < RANK_CNT; r++) {
-            printf("    {");
-            for (int f = 0; f < FILE_CNT/2; f++)
-                printf("S(%d, %d), ",
-                        mgS(PSQTBonus[p][r][f]) + (int)params[5+(32*p)+(4*r)+f][MG],
-                        egS(PSQTBonus[p][r][f]) + (int)params[5+(32*p)+(4*r)+f][EG]);
-            printf("},\n");
-        }
-    }
-    printf("};\n");
-*/
-}
+extern EvalTrace T, emptyTrace;
+
+TuneTuple *TupleStack;
+int TupleStackSize = STACKSIZE;
 
 double sigmoid(double S, double K) {
     return 1.0/(1.0+exp(-K*S/400.0));
@@ -59,9 +42,9 @@ double sigmoid(double S, double K) {
 
 int newEval(TuneEntry *entry, Params params) {
     int mg = 0, eg = 0;
-    for (int i = 0; i < PARAM_CNT; i++) {
-        //mg += params[i][MG] * entry->evalDiff[i][MG];
-        //eg += params[i][EG] * entry->evalDiff[i][EG];
+    for (int i = 0; i < entry->ntuples; i++) {
+        mg += params[i][MG] * entry->tuples[i].coeff;
+        eg += params[i][EG] * entry->tuples[i].coeff;
     }
     int result = ((mg * (256 - entry->phase)) + (eg * (entry->phase)))/256;
     return entry->eval + (entry->turn == WHITE ? result : -result);
@@ -125,68 +108,57 @@ void shuffleEntries(TuneEntry *entries) {
     }
 }
 
-int getParam(int paramIdx) {
-    assert(paramIdx > PARAM_CNT);
-    if (paramIdx - 5 < 0) {
-        return materialBonus[paramIdx+1];
-    }
-    paramIdx -= 5;
-    if (paramIdx - 192 < 0) {
-        int piece = (paramIdx / 32) + 1;
-        int file = (paramIdx % 32) / 4;
-        int rank = (paramIdx % 4);
-        return PSQTBonus[piece][rank][file];
-    }
+void updateGradient(TuneEntry *entries, Params gradient, Params params, double K, int batch) {
+    #pragma omp parallel shared(gradient)
+    {
+        Params local = {0};
+        double err;
 
-    // If something goes wrong, return pawn material
-    assert(0);
-    return materialBonus[PAWN];
-}
+        #pragma omp for schedule(static, BATCH_SIZE/PARTITION_CNT)
+        for (int i = batch * BATCH_SIZE; i < (batch + 1); i++) {
+            err = newSingleError(&entries[i], params, K);
 
-void updateParams(TuneEntry *entries, Params params, double K, int batch) {
-    Params grad = {0};
-    double err;
-
-    // Iterate over each position in the mini-batch
-    for (int i = batch * BATCH_SIZE; i < (batch + 1); i++) {
-        err = newSingleError(&entries[i], params, K);
-
-        for (int j = 0; j < PARAM_CNT; j++) {
-            for (int k = MG; k <= MG; k++) {
-                //if (entries[i].evalDiff[j][k] == 0) continue;
-                //grad[j][k] += err * entries[i].factors[k] * entries[i].evalDiff[j][k];
-            }
+            for (int j = 0; j < entries[i].ntuples; j++)
+                for (int k = MG; k <= EG; k++)
+                    local[entries[i].tuples[j].index][k] += err * entries[i].factors[k] * entries[i].tuples[j].coeff;
         }
-    }
 
-    for (int i = 0; i < PARAM_CNT; i++) {
-        for (int j = MG; j <= MG; j++) {
-            params[i][j] += (2.0 / BATCH_SIZE) * LEARNING_RATE * grad[i][j];
-        }
+        for (int i = 0; i < PARAM_CNT; i++)
+            for (int j = MG; j <= EG; j++)
+                gradient[i][j] += local[i][j];
     }
 }
 
-void updateRealEvalParam(int index, int value) {
-    if (index - 5 < 0) {
-        materialBonus[index+1] = value;
-        return;
-    }
-    index -= 5;
-    if (index - 192 < 0) {
-        int piece = (index / 32) + 1;
-        int file = (index % 32) / 4;
-        int rank = (index % 4);
-        PSQTBonus[piece][rank][file] = value;
-        return;
+void updateMemory(TuneEntry *entry, int size) {
+
+    if (size > TupleStackSize) {
+        TupleStackSize = STACKSIZE;
+        TupleStack = calloc(STACKSIZE, sizeof(TuneTuple));
     }
 
+    entry->tuples = TupleStack;
+    entry->ntuples = size;
+
+    TupleStack += size;
+    TupleStackSize -= size;
+}
+
+void initCoeffs(int coeffs[PARAM_CNT]) {
+    int i = 0;
+
+    EXECUTE_ON_PARAMS(INIT_COEFFS);
+
+    if (i != PARAM_CNT) {
+        printf("error initializing coefficients\n");
+        exit(0);
+    }
 }
 
 void initEntries(TuneEntry *entries, Thread *thread) {
     char str[256];
     FILE *f = fopen(PATH_TO_FENS, "r");
     Pos board;
-    int i,j;
+    int i,j,k, coeffs[PARAM_CNT];
     for (i = 0; i < ENTRY_CNT; i++) {
         if (fgets(str, 256, f) == NULL) {
             printf("Error reading line %d from file %s\n", i, PATH_TO_FENS);
@@ -194,18 +166,41 @@ void initEntries(TuneEntry *entries, Thread *thread) {
         }
         resetBoard(&board);
         parseFen(str, &board);
+
+        T = emptyTrace;
         entries[i].eval = evaluate(&board);
-        entries[i].phase = phase(&board);
         entries[i].turn = board.turn;
+
+        entries[i].phase = phase(&board);
+        entries[i].phase -= popcnt(board.pieces[KNIGHT] | board.pieces[BISHOP]);
+        entries[i].phase -= popcnt(board.pieces[ROOK]) * 2;
+        entries[i].phase -= popcnt(board.pieces[QUEEN]) * 4;
 
         entries[i].factors[MG] = 1 - entries[i].phase / 24.0;
         entries[i].factors[EG] = entries[i].phase / 24.0;
+
+        entries[i].phase = (entries[i].phase * 256 + 12)/24.0;
 
         if (strstr(str, "[1.0]")) entries[i].result = 1.0;
         else if (strstr(str, "[0.5]")) entries[i].result = 0.5;
         else if (strstr(str, "[0.0]")) entries[i].result = 0.0;
         else {
             printf("Invalid score at line %d of file %s\n", i, PATH_TO_FENS);
+        }
+
+        initCoeffs(coeffs);
+
+        for (j = 0, k = 0; j < PARAM_CNT; j++) {
+            k += coeffs[j] != 0;
+        }
+
+        updateMemory(&entries[i], k);
+
+        for (j = 0, k = 0; j < PARAM_CNT; j++) {
+            if (coeffs[j] != 0) {
+                entries[i].tuples[k].index = j;
+                entries[i].tuples[k++].coeff = coeffs[j];
+            }
         }
     }
     fclose(f);
@@ -221,8 +216,12 @@ void runTexelTuning(int threadCnt) {
     TuneEntry *entries = (TuneEntry*)calloc(ENTRY_CNT, sizeof(TuneEntry));
     Params params = {0};
 
+    double error, best = 999999, rate = LEARNING_RATE;
+
     // Init rng
     srand(time(0));
+
+    TupleStack = calloc(STACKSIZE, sizeof(TuneTuple));
 
     initEntries(entries, threads);
 
@@ -233,16 +232,25 @@ void runTexelTuning(int threadCnt) {
     while (1) {
         iterations++;
 
-        if ((iterations % 100) == 0) printParams(params);
-        printf("Error=%lf\n", newFullError(entries, params, K));
+        if ((iterations % 100) == 0) {
+
+            error = newFullError(entries, params, K);
+            if (error > best) rate /= LR_DROP_RATE;
+
+            best = error;
+            printf("Iteration %d Error %lf\n", iterations, newFullError(entries, params, K));
+        }
 
         shuffleEntries(entries);
 
         // Loop through all positions in batches
         for (int batch = 0; batch < ENTRY_CNT/BATCH_SIZE; batch++) {
 
-            updateParams(entries, params, K, batch);
-
+            Params gradient;
+            updateGradient(entries, gradient, params, K, batch);
+            for (int i = 0; i < PARAM_CNT; i++)
+                for (int j = MG; j <= EG; j++)
+                    params[i][j] += (2.0 / BATCH_SIZE) * rate * gradient[i][j];
         }
     }
 }
