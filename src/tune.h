@@ -3,7 +3,6 @@
 #define ENTRY_CNT (725000)
 #define PARTITION_CNT (64)
 #define K_PRECISION (10)
-// Mini-batch size
 #define BATCH_SIZE (16384)
 
 #define LR_DROP_RATE (1.25)
@@ -40,7 +39,6 @@ struct TuneEntry {
     float result;
     int eval;
     int phase;
-    int turn;
 
     double factors[PHASE_CNT];
 

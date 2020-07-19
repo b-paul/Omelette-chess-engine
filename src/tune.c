@@ -227,17 +227,16 @@ void initEntries(TuneEntry *entries, Thread *thread) {
 
         T = emptyTrace;
         entries[i].eval = evaluate(&board);
-        entries[i].turn = board.turn;
 
-        entries[i].phase = phase(&board);
+        entries[i].phase = 24;
         entries[i].phase -= popcnt(board.pieces[KNIGHT] | board.pieces[BISHOP]);
         entries[i].phase -= popcnt(board.pieces[ROOK]) * 2;
         entries[i].phase -= popcnt(board.pieces[QUEEN]) * 4;
 
-        entries[i].factors[MG] = 1 - entries[i].phase / 12.0;
-        entries[i].factors[EG] = entries[i].phase / 12.0;
+        entries[i].factors[MG] = 1 - entries[i].phase / 24.0;
+        entries[i].factors[EG] = entries[i].phase / 24.0;
 
-        entries[i].phase = (entries[i].phase * 256 + 12)/12.0;
+        entries[i].phase = (entries[i].phase * 256 + 12)/24.0;
 
         if (strstr(str, "\"1-0\"")) entries[i].result = 1.0;
         else if (strstr(str, "\"1/2-1/2\"")) entries[i].result = 0.5;
@@ -300,7 +299,7 @@ void runTexelTuning(int threadCnt) {
 
             best = error;
             printParams(params, cparams);
-            printf("Iteration %d Error %g\n", iterations, best);
+            printf("Iteration %d Error %g\n\n\n", iterations, best);
         }
 
         shuffleEntries(entries);
@@ -310,9 +309,8 @@ void runTexelTuning(int threadCnt) {
             Params gradient = {0};
             updateGradient(entries, gradient, params, K, batch);
             for (int i = 0; i < PARAM_CNT; i++)
-                for (int j = MG; j <= EG; j++) {
+                for (int j = MG; j <= EG; j++)
                     params[i][j] += (2.0 / BATCH_SIZE) * rate * gradient[i][j];
-                }
         }
     }
 }

@@ -58,7 +58,7 @@ int rookPSQT[RANK_CNT][FILE_CNT/2] = {
 };
 
 int queenPSQT[RANK_CNT][FILE_CNT/2] = {
-        {S(4,-50), S(4,-50), S(4,-50), S(0,-50)},
+        {S(4,-50), S(4,-50), S(4,-50), S(100,-50)},
         {S(-5,-50), S(-1,-30), S(2,-30), S(5,-30)},
         {S(-8,-50), S(-20,-30), S(4,-10), S(5,-10)},
         {S(-13,-50), S(-5,-30), S(2,-10), S(3,10)},
@@ -102,7 +102,7 @@ void initEval() {
         PSQT[bB][i] = -bishopValue - bishopPSQT[7-r][f];
         PSQT[bR][i] = -rookValue - rookPSQT[7-r][f];
         PSQT[bQ][i] = -queenValue - queenPSQT[7-r][f];
-        PSQT[bK][i] = kingPSQT[7-r][f];
+        PSQT[bK][i] = -kingPSQT[7-r][f];
     }
 }
 
@@ -211,7 +211,7 @@ int phase(Pos *board) {
     p -= popcnt(board->pieces[KNIGHT] | board->pieces[BISHOP]);
     p -= popcnt(board->pieces[ROOK]) * 2;
     p -= popcnt(board->pieces[QUEEN]) * 4;
-    return (p * 256 + 12)/12;
+    return (p * 256 + 12)/24;
 }
 
 // Evaluate a board position
