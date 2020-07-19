@@ -128,6 +128,7 @@ static inline int moveIsTactical(Move *move, Pos *board) {
 }
 
 static inline int moveIsPseudolegal(Move *move, Pos *board) {
+    return 0;
     if (move->value == NO_MOVE) return 0;
 
     int from = moveFrom(move);
@@ -186,7 +187,7 @@ static inline int moveIsPseudolegal(Move *move, Pos *board) {
              return (1ULL << to) & rank4th && board->pieceList[to] == NONE;
         }
 
-        return (abs(to-from) == 8) ? true : (1ULL << to) & getPawnAttacks(from, board->turn);
+        return (abs(to-from) == 8) ? board->pieceList[to] == NONE : (1ULL << to) & getPawnAttacks(from, board->turn);
     } else {
         Bitboard legalAttack;
         Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
