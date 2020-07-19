@@ -1,15 +1,15 @@
 #ifdef TUNE
 
-#define ENTRY_CNT 725000
-#define PARTITION_CNT 64
-#define K_PRECISION 10
+#define ENTRY_CNT (725000)
+#define PARTITION_CNT (64)
+#define K_PRECISION (10)
 // Mini-batch size
-#define BATCH_SIZE 16384
+#define BATCH_SIZE (16384)
 
-#define LR_DROP_RATE 1.25
-#define LEARNING_RATE 5.0
+#define LR_DROP_RATE (1.25)
+#define LEARNING_RATE (5.0)
 
-#define PARAM_CNT 197
+#define PARAM_CNT (197)
 
 #define STACKSIZE ((int)((double)ENTRY_CNT * PARAM_CNT / 32))
 

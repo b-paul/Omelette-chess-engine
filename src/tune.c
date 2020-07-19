@@ -82,34 +82,39 @@ double sigmoid(double S, double K) {
     return 1.0/(1.0+exp(-K*S/400.0));
 }
 
-int newEval(TuneEntry *entry, Params params) {
-    int mg = 0, eg = 0;
+double newEval(TuneEntry *entry, Params params) {
+    double mg = 0, eg = 0;
     for (int i = 0; i < entry->ntuples; i++) {
-        mg += params[i][MG] * entry->tuples[i].coeff;
-        eg += params[i][EG] * entry->tuples[i].coeff;
+        mg += params[entry->tuples[i].index][MG] * entry->tuples[i].coeff;
+        eg += params[entry->tuples[i].index][EG] * entry->tuples[i].coeff;
     }
-    int result = ((mg * (256 - entry->phase)) + (eg * (entry->phase)))/256;
-    return entry->eval + (entry->turn == WHITE ? result : -result);
+    return entry->eval + ((mg * (256 - entry->phase)) + (eg * entry->phase))/256.0;
 }
 
 double newSingleError(TuneEntry *entry, Params params, double K) {
-    double s = sigmoid(K, newEval(entry, params));
+    double s = sigmoid(newEval(entry, params), K);
     double sPrime = s * (1-s);
     return (entry->result - s) * sPrime;
 }
 
 double newFullError(TuneEntry *entries, Params params, double K) {
-    double r = 0;
-    for (int i = 0; i < ENTRY_CNT; i++) {
-        r += SQUARED(entries[i].result - sigmoid(newEval(&entries[i], params), K));
+    double r = 0.0;
+    #pragma omp parallel shared(r)
+    {
+        #pragma omp for schedule(static, ENTRY_CNT/PARTITION_CNT) reduction(+:r)
+        for (int i = 0; i < ENTRY_CNT; i++)
+            r += SQUARED(entries[i].result - sigmoid(newEval(&entries[i], params), K));
     }
     return r/ENTRY_CNT;
 }
 
 double fullError(TuneEntry *entries, double K) {
-    double r = 0;
-    for (int i = 0; i < ENTRY_CNT; i++) {
-        r += SQUARED(entries[i].result - sigmoid(entries[i].eval, K));
+    double r = 0.0;
+    #pragma omp parallel shared(r)
+    {
+        #pragma omp for schedule(static, ENTRY_CNT/PARTITION_CNT) reduction(+:r)
+        for (int i = 0; i < ENTRY_CNT; i++)
+            r += SQUARED(entries[i].result - sigmoid(entries[i].eval, K));
     }
     return r/ENTRY_CNT;
 }
@@ -151,18 +156,18 @@ void shuffleEntries(TuneEntry *entries) {
 }
 
 void updateGradient(TuneEntry *entries, Params gradient, Params params, double K, int batch) {
+
     #pragma omp parallel shared(gradient)
     {
         Params local = {0};
-        double err;
-
         #pragma omp for schedule(static, BATCH_SIZE/PARTITION_CNT)
-        for (int i = batch * BATCH_SIZE; i < (batch + 1); i++) {
-            err = newSingleError(&entries[i], params, K);
+        for (int i = batch * BATCH_SIZE; i < (batch + 1) * BATCH_SIZE; i++) {
+            double err = newSingleError(&entries[i], params, K);
 
             for (int j = 0; j < entries[i].ntuples; j++)
-                for (int k = MG; k <= EG; k++)
+                for (int k = MG; k <= EG; k++) {
                     local[entries[i].tuples[j].index][k] += err * entries[i].factors[k] * entries[i].tuples[j].coeff;
+                }
         }
 
         for (int i = 0; i < PARAM_CNT; i++)
@@ -234,11 +239,12 @@ void initEntries(TuneEntry *entries, Thread *thread) {
 
         entries[i].phase = (entries[i].phase * 256 + 12)/24.0;
 
-        if (strstr(str, "[1.0]")) entries[i].result = 1.0;
-        else if (strstr(str, "[0.5]")) entries[i].result = 0.5;
-        else if (strstr(str, "[0.0]")) entries[i].result = 0.0;
+        if (strstr(str, "\"1-0\"")) entries[i].result = 1.0;
+        else if (strstr(str, "\"1/2-1/2\"")) entries[i].result = 0.5;
+        else if (strstr(str, "\"0-1\"")) entries[i].result = 0.0;
         else {
             printf("Invalid score at line %d of file %s\n", i, PATH_TO_FENS);
+            exit(0);
         }
 
         initCoeffs(coeffs);
@@ -294,19 +300,19 @@ void runTexelTuning(int threadCnt) {
 
             best = error;
             printParams(params, cparams);
-            printf("Iteration %d Error %lf\n", iterations, newFullError(entries, params, K));
+            printf("Iteration %d Error %g\n", iterations, best);
         }
 
         shuffleEntries(entries);
 
-        // Loop through all positions in batches
         for (int batch = 0; batch < ENTRY_CNT/BATCH_SIZE; batch++) {
 
-            Params gradient;
+            Params gradient = {0};
             updateGradient(entries, gradient, params, K, batch);
             for (int i = 0; i < PARAM_CNT; i++)
-                for (int j = MG; j <= EG; j++)
+                for (int j = MG; j <= EG; j++) {
                     params[i][j] += (2.0 / BATCH_SIZE) * rate * gradient[i][j];
+                }
         }
     }
 }
