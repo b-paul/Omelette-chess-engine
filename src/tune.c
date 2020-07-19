@@ -165,9 +165,8 @@ void updateGradient(TuneEntry *entries, Params gradient, Params params, double K
             double err = newSingleError(&entries[i], params, K);
 
             for (int j = 0; j < entries[i].ntuples; j++)
-                for (int k = MG; k <= EG; k++) {
+                for (int k = MG; k <= EG; k++)
                     local[entries[i].tuples[j].index][k] += err * entries[i].factors[k] * entries[i].tuples[j].coeff;
-                }
         }
 
         for (int i = 0; i < PARAM_CNT; i++)
