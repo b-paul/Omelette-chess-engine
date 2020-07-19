@@ -234,10 +234,10 @@ void initEntries(TuneEntry *entries, Thread *thread) {
         entries[i].phase -= popcnt(board.pieces[ROOK]) * 2;
         entries[i].phase -= popcnt(board.pieces[QUEEN]) * 4;
 
-        entries[i].factors[MG] = 1 - entries[i].phase / 24.0;
-        entries[i].factors[EG] = entries[i].phase / 24.0;
+        entries[i].factors[MG] = 1 - entries[i].phase / 12.0;
+        entries[i].factors[EG] = entries[i].phase / 12.0;
 
-        entries[i].phase = (entries[i].phase * 256 + 12)/24.0;
+        entries[i].phase = (entries[i].phase * 256 + 12)/12.0;
 
         if (strstr(str, "\"1-0\"")) entries[i].result = 1.0;
         else if (strstr(str, "\"1/2-1/2\"")) entries[i].result = 0.5;
