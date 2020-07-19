@@ -15,16 +15,16 @@ OBJ = *.c fathom/tbprobe.c
 .PHONY:	build debug profile tune clean 
 
 build:
-	$(CC) $(CFLAGS) -o omelette $(OBJ) -lm
+	$(CC) $(CFLAGS) -o $(EXE) $(OBJ) -lm
 
 debug:
-	$(CC) $(DFLAGS) -o omelette $(OBJ) -lm
+	$(CC) $(DFLAGS) -o $(EXE) $(OBJ) -lm
 
 profile:
-	$(CC) $(CFLAGS) -o omelette $(OBJ) -lm
+	$(CC) $(CFLAGS) -o $(EXE) $(OBJ) -lm
 
 tune:
-	$(CC) $(TFLAGS) -o omelette $(OBJ) -lm
+	$(CC) $(TFLAGS) -o $(EXE) $(OBJ) -lm
 
 clean:
 	-rm *.o
