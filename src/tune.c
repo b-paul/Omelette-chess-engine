@@ -93,8 +93,7 @@ double newEval(TuneEntry *entry, Params params) {
 
 double newSingleError(TuneEntry *entry, Params params, double K) {
     double s = sigmoid(newEval(entry, params), K);
-    double sPrime = s * (1-s);
-    return (entry->result - s) * sPrime;
+    return SQUARED(entry->result - s);
 }
 
 double newFullError(TuneEntry *entries, Params params, double K) {
@@ -105,7 +104,7 @@ double newFullError(TuneEntry *entries, Params params, double K) {
         for (int i = 0; i < ENTRY_CNT; i++)
             r += SQUARED(entries[i].result - sigmoid(newEval(&entries[i], params), K));
     }
-    return r/ENTRY_CNT;
+    return r/(double)ENTRY_CNT;
 }
 
 double fullError(TuneEntry *entries, double K) {
@@ -116,12 +115,12 @@ double fullError(TuneEntry *entries, double K) {
         for (int i = 0; i < ENTRY_CNT; i++)
             r += SQUARED(entries[i].result - sigmoid(entries[i].eval, K));
     }
-    return r/ENTRY_CNT;
+    return r/(double)ENTRY_CNT;
 }
 
 double computeK(TuneEntry *entries) {
     double start = -10.0, end = 10.0, delta = 1.0;
-    double curr = start, err , best = fullError(entries, start);
+    double curr = start, err, best = fullError(entries, start);
 
     for (int i = 0; i < K_PRECISION; i++) {
         curr = start - delta;
@@ -284,7 +283,12 @@ void runTexelTuning(int threadCnt) {
 
     initEntries(entries, threads);
 
-    const double K = computeK(entries);
+    //const double K = computeK(entries);
+    const double K = 1.13;
+
+    printf("K = %g\n", K);
+
+    printf("Starting error %g\n", fullError(entries, K));
 
     int iterations = 0;
 
