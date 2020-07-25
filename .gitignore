@@ -1,2 +1,5 @@
 omelette
 *.o
+cutechess-cli
+libcutechess.so.1
+games.pgn

@@ -6,6 +6,7 @@ typedef unsigned long long Key;
 #define MAX(a, b) (((a) > (b)) ? a : b)
 #define MIN(a, b) (((a) < (b)) ? a : b)
 #define CLAMP(a, b, c) (MIN((a), MAX((b), (c))))
+#define SQUARED(a) (a)*(a)
 
 #define WDL_WIN 31256
 
@@ -83,8 +84,13 @@ enum MoveFlags {
 };
 
 enum Moves {
-        NO_MOVE,
-        NULL_MOVE = 65,
+    NO_MOVE,
+    NULL_MOVE = 65,
+};
+
+enum Phase {
+    MG, EG,
+    PHASE_CNT
 };
 
 typedef struct goArgs goArgs;
@@ -100,3 +106,8 @@ typedef struct Thread Thread;
 typedef struct ttEntry ttEntry;
 typedef struct tTable tTable;
 typedef struct Undo Undo;
+#ifdef TUNE
+typedef struct TuneEntry TuneEntry;
+typedef struct TuneTuple TuneTuple;
+typedef struct EvalTrace EvalTrace;
+#endif

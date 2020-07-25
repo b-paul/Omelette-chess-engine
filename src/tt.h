@@ -1,5 +1,6 @@
 #pragma once
 
+#include "movegen.h"
 #include "types.h"
 
 struct ttEntry {

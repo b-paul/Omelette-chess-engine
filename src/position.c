@@ -168,7 +168,6 @@ int isDrawn(Pos *board, int height) {
 
 
 int makeMove(Pos* board, Move *move) {
-
     if (move->value == NO_MOVE) return 0;
 
     board->fiftyMoveRule++;

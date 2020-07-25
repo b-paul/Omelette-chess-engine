@@ -4,9 +4,9 @@
 #include "bitboards.h"
 #include "evaluate.h"
 #include "movegen.h"
-#include "position.h"
 #include "types.h"
 
+Bitboard randBB();
 void initZobrist();
 void initPosition();
 void resetBoard(Pos* board);
@@ -59,11 +59,6 @@ struct Undo {
 // Is check
 // side is the side to check
 static inline Bitboard squareAttackers(Pos *board, int sq, int side) {
-    if (sq > 63) {
-        printBoard(*board);
-        printBitBoard(board->pieces[KING]);
-        printBitBoard(board->sides[side]);
-    }
     Bitboard them = board->sides[!side];
     Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
 
@@ -133,6 +128,7 @@ static inline int moveIsTactical(Move *move, Pos *board) {
 }
 
 static inline int moveIsPseudolegal(Move *move, Pos *board) {
+    return 0;
     if (move->value == NO_MOVE) return 0;
 
     int from = moveFrom(move);
@@ -191,7 +187,7 @@ static inline int moveIsPseudolegal(Move *move, Pos *board) {
              return (1ULL << to) & rank4th && board->pieceList[to] == NONE;
         }
 
-        return (abs(to-from) == 8) ? true : (1ULL << to) & getPawnAttacks(from, board->turn);
+        return (abs(to-from) == 8) ? board->pieceList[to] == NONE : (1ULL << to) & getPawnAttacks(from, board->turn);
     } else {
         Bitboard legalAttack;
         Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
