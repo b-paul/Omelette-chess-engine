@@ -67,7 +67,7 @@ void printParams(Params params, Params cparams) {
 
     for (int j = 0; j < PARAM_CNT; j++)
         for (int k = MG; k <= EG; k++)
-            tparams[j][k] = params[j][k] + cparams[j][k];
+            tparams[j][k] = -params[j][k] + cparams[j][k];
 
     int i = 0;
     EXECUTE_ON_PARAMS(PRINT_PARAMS);
@@ -88,12 +88,13 @@ double newEval(TuneEntry *entry, Params params) {
         mg += params[entry->tuples[i].index][MG] * entry->tuples[i].coeff;
         eg += params[entry->tuples[i].index][EG] * entry->tuples[i].coeff;
     }
-    return entry->eval + ((mg * (256 - entry->phase)) + (eg * entry->phase))/256.0;
+    return entry->eval - ((mg * (256 - entry->phase)) + (eg * entry->phase))/256.0;
 }
 
 double newSingleError(TuneEntry *entry, Params params, double K) {
     double s = sigmoid(newEval(entry, params), K);
-    return SQUARED(entry->result - s);
+    double sprime = s * (1-s);
+    return (entry->result - s) * sprime;
 }
 
 double newFullError(TuneEntry *entries, Params params, double K) {
@@ -225,6 +226,7 @@ void initEntries(TuneEntry *entries, Thread *thread) {
 
         T = emptyTrace;
         entries[i].eval = evaluate(&board);
+        entries[i].eval = board.turn == WHITE ? entries->eval : -entries->eval;
 
         entries[i].phase = 24;
         entries[i].phase -= popcnt(board.pieces[KNIGHT] | board.pieces[BISHOP]);
@@ -283,8 +285,8 @@ void runTexelTuning(int threadCnt) {
 
     initEntries(entries, threads);
 
-    //const double K = computeK(entries);
-    const double K = 1.13;
+    const double K = computeK(entries);
+    //const double K = 11.2222;
 
     printf("K = %g\n", K);
 
@@ -295,7 +297,7 @@ void runTexelTuning(int threadCnt) {
     while (1) {
         iterations++;
 
-        if ((iterations % 100) == 0) {
+        if ((iterations % REPORTING) == 0) {
 
             error = newFullError(entries, params, K);
             if (error > best) rate /= LR_DROP_RATE;
