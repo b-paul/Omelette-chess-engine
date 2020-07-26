@@ -643,7 +643,7 @@ void uciLoop() {
 
 
 void reportSearchInfo(Thread *threads) {
-    long nodes = 0, tbHits = 0;
+    unsigned long long nodes = 0, tbHits = 0;
     char moveStr[6];
 
     for (int i = 0; i < threads->threadCount; i++) {
@@ -652,7 +652,7 @@ void reportSearchInfo(Thread *threads) {
     }
 
     int curTime = getTime();
-    long nps = nodes*1000/(curTime - threads[0].startTime+1);
+    unsigned long long nps = nodes*1000/(curTime - threads[0].startTime+1);
     
     printf("info depth %d seldepth %d nodes %lu nps %lu tbhits %lu pv", threads[0].depth, threads[0].seldepth, nodes, nps, tbHits);
 

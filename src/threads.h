@@ -13,8 +13,8 @@ struct Thread {
     int depth;
     int seldepth;
     Pos board;
-    int nodes;
-    int tbHits;
+    unsigned long long nodes;
+    unsigned long long tbHits;
     int startTime;
     int maxTime;
     int maxDepth;
