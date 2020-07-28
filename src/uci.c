@@ -654,7 +654,7 @@ void reportSearchInfo(Thread *threads) {
     int curTime = getTime();
     unsigned long long nps = nodes*1000/(curTime - threads[0].startTime+1);
     
-    printf("info depth %d seldepth %d nodes %lu nps %lu tbhits %lu pv", threads[0].depth, threads[0].seldepth, nodes, nps, tbHits);
+    printf("info depth %d seldepth %d nodes %llu nps %llu tbhits %llu pv", threads[0].depth, threads[0].seldepth, nodes, nps, tbHits);
 
     for (int i = 0; i < threads[0].pv.length; i++) {
         moveToStr(threads[0].pv.pv[i], threads[0].board, moveStr);
