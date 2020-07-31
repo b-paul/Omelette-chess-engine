@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bitboards.h"
 #include "types.h"
 
 #include <stdint.h>
@@ -16,6 +17,10 @@ extern int PSQT[PIECE_CNT][SQ_CNT];
 
 static inline int relativeFile(int sq) {
     return (sq & 0x4) ? (~sq & 0x3) : (sq & 0x3);
+}
+
+static inline int relativeRank(int sq, int turn) {
+    return turn == WHITE ? rank(sq) : 7-rank(sq);
 }
 
 struct EvalTrace {

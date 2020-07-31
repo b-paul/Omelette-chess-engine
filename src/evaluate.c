@@ -5,110 +5,109 @@
 
 EvalTrace T, emptyTrace;
 
-int pawnValue = S(144, 231);
+int pawnValue = S(101, 143);
 
-int knightValue = S(474, 418);
+int knightValue = S(357, 267);
 
-int bishopValue = S(519, 585);
+int bishopValue = S(393, 289);
 
-int rookValue = S(694, 942);
+int rookValue = S(509, 521);
 
-int queenValue = S(1274, 1633);
+int queenValue = S(1005, 990);
 
 int pawnPSQT[RANK_CNT][FILE_CNT/2] = {
     {S(0, 0), S(0, 0), S(0, 0), S(0, 0), },
-    {S(-3, -3), S(7, -4), S(-1, -7), S(-26, 7), },
-    {S(-9, -5), S(5, -5), S(5, -11), S(-3, -7), },
-    {S(-20, 3), S(0, 0), S(11, -9), S(41, -15), },
-    {S(-19, 9), S(1, 5), S(14, -4), S(48, -11), },
-    {S(0, 35), S(20, 33), S(21, 27), S(39, 29), },
-    {S(36, 55), S(65, 52), S(57, 52), S(42, 64), },
+    {S(-38, -39), S(10, -39), S(-3, -38), S(-11, -34), },
+    {S(-35, -44), S(0, -43), S(-5, -53), S(-2, -47), },
+    {S(-43, -35), S(-9, -39), S(-11, -51), S(7, -55), },
+    {S(-40, -13), S(-2, -22), S(-10, -33), S(8, -46), },
+    {S(-37, 57), S(-9, 59), S(21, 28), S(28, 20), },
+    {S(14, 159), S(59, 143), S(55, 115), S(61, 104), },
     {S(0, 0), S(0, 0), S(0, 0), S(0, 0), },
 
 };
 
 int knightPSQT[RANK_CNT][FILE_CNT/2] = {
-    {S(-23, -14), S(-11, -19), S(-17, -13), S(-14, -12), },
-    {S(-19, -17), S(-7, -4), S(1, -2), S(17, 9), },
-    {S(-19, -12), S(3, 1), S(50, 18), S(41, 32), },
-    {S(-8, -7), S(12, 6), S(38, 46), S(58, 56), },
-    {S(-10, -7), S(13, 8), S(42, 46), S(67, 58), },
-    {S(-15, -13), S(7, 4), S(40, 19), S(36, 21), },
-    {S(-13, -14), S(-8, -4), S(-6, -47), S(-1, 18), },
-    {S(-15, -17), S(-10, -25), S(-19, -13), S(-16, -11), },
+    {S(-39, -27), S(-11, -32), S(-27, 0), S(-13, 1), },
+    {S(-14, -23), S(-25, -4), S(6, -1), S(17, 4), },
+    {S(-11, -5), S(13, 0), S(22, 7), S(19, 24), },
+    {S(-5, -1), S(17, 8), S(18, 31), S(20, 36), },
+    {S(16, -3), S(15, 16), S(27, 35), S(33, 38), },
+    {S(-8, -19), S(60, -11), S(34, 28), S(58, 20), },
+    {S(-46, -19), S(-21, 0), S(60, -15), S(8, 9), },
+    {S(-94, -63), S(-24, -40), S(-40, -11), S(0, -16), },
 
 };
 
 int bishopPSQT[RANK_CNT][FILE_CNT/2] = {
-    {S(-25, -13), S(-17, -10), S(-11, -19), S(-22, -11), },
-    {S(-24, -13), S(44, -7), S(1, -1), S(21, 4), },
-    {S(-12, -7), S(8, 1), S(27, 14), S(37, 19), },
-    {S(-14, -6), S(10, 3), S(39, 18), S(51, 27), },
-    {S(-19, -4), S(31, 7), S(7, 20), S(48, 28), },
-    {S(-16, -3), S(7, 1), S(24, 15), S(26, 17), },
-    {S(-23, -11), S(14, -6), S(2, 0), S(0, 10), },
-    {S(-23, -16), S(-19, -9), S(-23, -19), S(-29, -7), },
+    {S(-19, 0), S(0, 6), S(-2, 4), S(-5, 10), },
+    {S(10, -9), S(31, -13), S(20, -3), S(14, 5), },
+    {S(5, -5), S(12, -1), S(24, 3), S(15, 11), },
+    {S(-1, -3), S(8, 0), S(6, 8), S(25, 9), },
+    {S(-3, 2), S(4, 4), S(15, 8), S(34, 7), },
+    {S(-14, 6), S(26, -5), S(26, 0), S(17, -3), },
+    {S(-43, 1), S(3, -3), S(-3, 0), S(-9, -6), },
+    {S(-17, -13), S(-11, -13), S(-43, -10), S(-26, -7), },
 
 };
 
 int rookPSQT[RANK_CNT][FILE_CNT/2] = {
-    {S(-21, -15), S(-25, 0), S(27, -6), S(42, 0), },
-    {S(-27, 2), S(-9, 2), S(3, 2), S(18, 4), },
-    {S(-13, -6), S(-2, 0), S(4, 0), S(13, 3), },
-    {S(-8, -8), S(-5, -3), S(3, 3), S(14, 3), },
-    {S(-5, -4), S(-1, -1), S(8, 5), S(20, 7), },
-    {S(4, 10), S(13, 14), S(10, 11), S(10, 16), },
-    {S(2, 38), S(23, 39), S(24, 40), S(23, 38), },
-    {S(11, 22), S(12, 32), S(34, 30), S(47, 27), },
+    {S(-8, -12), S(-12, 1), S(9, -3), S(26, -9), },
+    {S(-45, 1), S(-4, -7), S(-2, -3), S(6, -4), },
+    {S(-35, -3), S(-13, 0), S(-5, -7), S(-4, -4), },
+    {S(-41, 4), S(-11, 1), S(-14, 4), S(-1, 0), },
+    {S(-36, 8), S(-14, 2), S(6, 7), S(7, 0), },
+    {S(-19, 5), S(25, 0), S(16, 0), S(11, 3), },
+    {S(10, 5), S(12, 7), S(56, -4), S(54, -5), },
+    {S(3, 8), S(14, 4), S(-7, 14), S(28, 7), },
 
 };
 
 int queenPSQT[RANK_CNT][FILE_CNT/2] = {
-    {S(19, -19), S(15, -20), S(14, -19), S(130, -23), },
-    {S(4, -35), S(8, -10), S(37, -5), S(30, 0), },
-    {S(13, -28), S(10, -9), S(31, 23), S(29, 29), },
-    {S(7, -25), S(15, 0), S(25, 26), S(24, 53), },
-    {S(8, -27), S(16, 0), S(27, 27), S(23, 59), },
-    {S(5, -30), S(17, -4), S(14, 24), S(17, 30), },
-    {S(-10, -37), S(0, -3), S(24, -5), S(16, 2), },
-    {S(-5, -18), S(-8, -20), S(-8, -19), S(29, -20), },
+    {S(3, -28), S(9, -32), S(11, -27), S(29, -38), },
+    {S(-8, -19), S(8, -29), S(31, -38), S(25, -21), },
+    {S(0, 0), S(16, -20), S(4, 13), S(8, 1), },
+    {S(2, -6), S(-8, 30), S(-5, 22), S(-11, 40), },
+    {S(-1, 12), S(-22, 37), S(-10, 23), S(-21, 51), },
+    {S(23, -15), S(17, -7), S(5, 15), S(6, 41), },
+    {S(-2, -13), S(-45, 22), S(10, 19), S(-14, 36), },
+    {S(4, -10), S(6, 6), S(15, 15), S(24, 16), },
 
 };
 
 int kingPSQT[RANK_CNT][FILE_CNT/2] = {
-    {S(62, -79), S(82, -72), S(21, -60), S(45, -73), },
-    {S(2, -60), S(4, -31), S(-16, -23), S(-42, -19), },
-    {S(-21, -50), S(-20, -20), S(-22, 2), S(-26, 3), },
-    {S(-35, -53), S(-30, -22), S(-26, 9), S(-31, 30), },
-    {S(-42, -55), S(-37, -20), S(-39, 7), S(-41, 28), },
-    {S(-55, -53), S(-50, -23), S(-53, 3), S(-55, 5), },
-    {S(-51, -60), S(-55, -28), S(-68, -23), S(-93, -18), },
-    {S(-61, -79), S(-40, -69), S(-85, -59), S(-56, -72), },
+    {S(48, -69), S(64, -45), S(3, -21), S(27, -35), },
+    {S(44, -33), S(30, -15), S(-19, 6), S(-40, 14), },
+    {S(-13, -13), S(-4, 1), S(-41, 18), S(-60, 28), },
+    {S(-41, -14), S(-16, 3), S(-38, 24), S(-61, 32), },
+    {S(-11, -6), S(4, 20), S(3, 26), S(-6, 24), },
+    {S(9, 4), S(32, 27), S(32, 28), S(14, 11), },
+    {S(1, 0), S(8, 16), S(11, 22), S(14, 10), },
+    {S(-4, -30), S(6, -13), S(3, -3), S(-2, -18), },
 
 };
 
 int knightMobilityBonus[9] = {
-    S(-36, -9), S(-60, -20), S(-27, -14), S(112, 34), S(152, 102), S(86, 93), S(48, 80), S(17, 34),
-    S(3, 6),
+    S(-10, -13), S(-4, -12), S(-4, -2), S(-2, 2), S(4, 2), S(8, 6), S(13, 2), S(22, -3),
+    S(37, -18),
 };
 
 int bishopMobilityBonus[14] = {
-    S(-348, -60), S(28, -14), S(120, 13), S(185, 64), S(146, 97), S(96, 104), S(79, 114), S(48, 107),
-    S(32, 69), S(17, 51), S(7, 19), S(3, 14), S(0, 3), S(0, 2),
+    S(-29, -56), S(-14, -32), S(-7, -21), S(-3, -7), S(0, 2), S(4, 6), S(9, 10), S(4, 14),
+    S(16, 13), S(20, 11), S(37, 8), S(38, 9), S(11, 14), S(14, 14),
 };
 
 int rookMobilityBonus[15] = {
-    S(-125, -42), S(-75, -36), S(-40, -31), S(33, -4), S(72, 38), S(76, 74), S(108, 150), S(121, 225),
-    S(123, 284), S(113, 310), S(77, 253), S(37, 152), S(20, 108), S(3, 47), S(-1, 58),
+    S(-39, -42), S(-37, -26), S(-35, -16), S(-28, -8), S(-23, 0), S(-15, 2), S(-7, 9), S(3, 9),
+    S(10, 11), S(18, 11), S(28, 12), S(24, 14), S(30, 16), S(32, 15), S(48, 12),
 };
 
 int queenMobilityBonus[28] = {
-    S(-27, 0), S(-8, 1), S(21, 4), S(18, 5), S(26, 8), S(44, 14), S(40, 20), S(34, 25),
-    S(40, 31), S(42, 38), S(44, 43), S(48, 53), S(43, 54), S(43, 62), S(42, 66), S(39, 68),
-    S(34, 67), S(27, 60), S(23, 57), S(17, 47), S(14, 43), S(12, 42), S(5, 14), S(4, 14),
-    S(1, 5), S(1, 5), S(0, 1), S(0, 1),
+    S(-44, -23), S(-39, -15), S(-25, -42), S(-21, -54), S(-19, -47), S(-14, -50), S(-14, -31), S(-13, -15),
+    S(-8, -8), S(-6, -5), S(-3, 3), S(1, 11), S(-1, 14), S(4, 16), S(6, 29), S(19, 27),
+    S(21, 17), S(31, 18), S(38, 20), S(43, 27), S(29, 31), S(33, 34), S(27, 31), S(31, 42),
+    S(15, 25), S(15, 24), S(4, 8), S(3, 4),
 };
-
 int PSQT[PIECE_CNT][SQ_CNT];
 
 int bishopPairBonus = S(20, 50);
@@ -150,7 +149,7 @@ void psqtEvalTrace(Pos *board) {
     pieces = board->pieces[PAWN] & board->sides[BLACK];
     while (pieces) {
         sq = poplsb(&pieces);
-        r = rank(sq);
+        r = 7-rank(sq);
         f = relativeFile(sq);
         T.pawnValue[BLACK]++;
         T.pawnPSQT[r][f][BLACK]++;
@@ -165,7 +164,7 @@ void psqtEvalTrace(Pos *board) {
     pieces = board->pieces[KING] & board->sides[BLACK];
     while (pieces) {
         sq = poplsb(&pieces);
-        r = rank(sq);
+        r = 7-rank(sq);
         f = relativeFile(sq);
         T.kingPSQT[r][f][BLACK]++;
     }
@@ -190,13 +189,13 @@ int evaluateKnights(Pos *board, Bitboard knights, Bitboard moveableSquares, int 
         sq = poplsb(&knights);
 
         if (TRACE) T.knightValue[turn]++;
-        if (TRACE) T.knightPSQT[rank(sq)][relativeFile(sq)][turn]++;
+        if (TRACE) T.knightPSQT[relativeRank(sq, turn)][relativeFile(sq)][turn]++;
 
         attacks = getKnightAttacks(sq) & moveableSquares;
         mobility = popcnt(attacks);
 
         r += knightMobilityBonus[mobility];
-        if (TRACE) T.knightMobilityBonus[mobility][turn]--;
+        if (TRACE) T.knightMobilityBonus[mobility][turn]++;
     }
 
     return r;
@@ -212,13 +211,13 @@ int evaluateBishops(Pos *board, Bitboard bishops, Bitboard moveableSquares, Bitb
         sq = poplsb(&bishops);
 
         if (TRACE) T.bishopValue[turn]++;
-        if (TRACE) T.bishopPSQT[rank(sq)][relativeFile(sq)][turn]++;
+        if (TRACE) T.bishopPSQT[relativeRank(sq, turn)][relativeFile(sq)][turn]++;
 
         attacks = getBishopAttacks(sq, occ) & moveableSquares;
         mobility = popcnt(attacks);
 
         r += bishopMobilityBonus[mobility];
-        if (TRACE) T.bishopMobilityBonus[mobility][turn]--;
+        if (TRACE) T.bishopMobilityBonus[mobility][turn]++;
     }
 
     return r;
@@ -234,13 +233,13 @@ int evaluateRooks(Pos *board, Bitboard rooks, Bitboard moveableSquares, Bitboard
         sq = poplsb(&rooks);
 
         if (TRACE) T.rookValue[turn]++;
-        if (TRACE) T.rookPSQT[rank(sq)][relativeFile(sq)][turn]++;
+        if (TRACE) T.rookPSQT[relativeRank(sq, turn)][relativeFile(sq)][turn]++;
 
         attacks = getRookAttacks(sq, occ) & moveableSquares;
         mobility = popcnt(attacks);
 
         r += rookMobilityBonus[mobility];
-        if (TRACE) T.rookMobilityBonus[mobility][turn]--;
+        if (TRACE) T.rookMobilityBonus[mobility][turn]++;
     }
 
     return r;
@@ -256,13 +255,13 @@ int evaluateQueens(Pos *board, Bitboard queens, Bitboard moveableSquares, Bitboa
         sq = poplsb(&queens);
 
         if (TRACE) T.queenValue[turn]++;
-        if (TRACE) T.queenPSQT[rank(sq)][relativeFile(sq)][turn]++;
+        if (TRACE) T.queenPSQT[relativeRank(sq, turn)][relativeFile(sq)][turn]++;
 
         attacks = getQueenAttacks(sq, occ) & moveableSquares;
         mobility = popcnt(attacks);
 
         r += queenMobilityBonus[mobility];
-        if (TRACE) T.queenMobilityBonus[mobility][turn]--;
+        if (TRACE) T.queenMobilityBonus[mobility][turn]++;
     }
 
     return r;
