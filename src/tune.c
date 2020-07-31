@@ -31,6 +31,11 @@ extern int rookPSQT[RANK_CNT][FILE_CNT/2];
 extern int queenPSQT[RANK_CNT][FILE_CNT/2];
 extern int kingPSQT[RANK_CNT][FILE_CNT/2];
 
+extern int knightMobilityBonus[9];
+extern int bishopMobilityBonus[14];
+extern int rookMobilityBonus[15];
+extern int queenMobilityBonus[28];
+
 extern EvalTrace T, emptyTrace;
 
 TuneTuple *TupleStack;
@@ -42,8 +47,10 @@ void print0(char *name, int params[PARAM_CNT][PHASE_CNT], int i, char *S) {
 
 void print1(char *name, int params[PARAM_CNT][PHASE_CNT], int i, int A, char *S) {
     printf("int %s%s = {\n    ", name, S);
-    for (int a = 0; a < A; a++, i++)
+    for (int a = 0; a < A; a++, i++) {
         printf("S(%d, %d), ", params[i][MG], params[i][EG]);
+        if (a % 8 == 7) printf("\n    ");
+    }
     printf("\n};\n\n");
 }
 
@@ -285,8 +292,8 @@ void runTexelTuning(int threadCnt) {
 
     initEntries(entries, threads);
 
-    const double K = computeK(entries);
-    //const double K = 11.2222;
+    //const double K = computeK(entries);
+    const double K = 1.2222;
 
     printf("K = %g\n", K);
 

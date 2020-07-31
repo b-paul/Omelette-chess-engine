@@ -9,23 +9,27 @@
 #define LR_DROP_RATE (1.25)
 #define LEARNING_RATE (5.0)
 
-#define PARAM_CNT (197)
+#define PARAM_CNT (66) // 263
 
 #define STACKSIZE ((int)((double)ENTRY_CNT * PARAM_CNT / 32))
 
 #define PATH_TO_FENS "../tune/zurichess_positions/quiet-labeled.epd"
 
-#define TunepawnValue (1)
-#define TuneknightValue (1)
-#define TunebishopValue (1)
-#define TunerookValue (1)
-#define TunequeenValue (1)
-#define TunepawnPSQT (1)
-#define TuneknightPSQT (1)
-#define TunebishopPSQT (1)
-#define TunerookPSQT (1)
-#define TunequeenPSQT (1)
-#define TunekingPSQT (1)
+#define TunepawnValue (0)
+#define TuneknightValue (0)
+#define TunebishopValue (0)
+#define TunerookValue (0)
+#define TunequeenValue (0)
+#define TunepawnPSQT (0)
+#define TuneknightPSQT (0)
+#define TunebishopPSQT (0)
+#define TunerookPSQT (0)
+#define TunequeenPSQT (0)
+#define TunekingPSQT (0)
+#define TuneknightMobilityBonus (1)
+#define TunebishopMobilityBonus (1)
+#define TunerookMobilityBonus (1)
+#define TunequeenMobilityBonus (1)
 
 #include "types.h"
 
@@ -109,6 +113,10 @@ void runTexelTuning(int threadCnt);
     ENABLE_2(F, rookPSQT, RANK_CNT, FILE_CNT/2, "[RANK_CNT][FILE_CNT/2]"); \
     ENABLE_2(F, queenPSQT, RANK_CNT, FILE_CNT/2, "[RANK_CNT][FILE_CNT/2]"); \
     ENABLE_2(F, kingPSQT, RANK_CNT, FILE_CNT/2, "[RANK_CNT][FILE_CNT/2]"); \
+    ENABLE_1(F, knightMobilityBonus, 9, "[9]"); \
+    ENABLE_1(F, bishopMobilityBonus, 14, "[14]"); \
+    ENABLE_1(F, rookMobilityBonus, 15, "[15]"); \
+    ENABLE_1(F, queenMobilityBonus, 28, "[28]"); \
 } while(0)
 
 #endif

@@ -3,9 +3,7 @@
 #include "position.h"
 #include "types.h"
 
-#ifdef TUNE
 EvalTrace T, emptyTrace;
-#endif
 
 int pawnValue = S(144, 231);
 
@@ -89,6 +87,28 @@ int kingPSQT[RANK_CNT][FILE_CNT/2] = {
 
 };
 
+int knightMobilityBonus[9] = {
+    S(-36, -9), S(-60, -20), S(-27, -14), S(112, 34), S(152, 102), S(86, 93), S(48, 80), S(17, 34),
+    S(3, 6),
+};
+
+int bishopMobilityBonus[14] = {
+    S(-348, -60), S(28, -14), S(120, 13), S(185, 64), S(146, 97), S(96, 104), S(79, 114), S(48, 107),
+    S(32, 69), S(17, 51), S(7, 19), S(3, 14), S(0, 3), S(0, 2),
+};
+
+int rookMobilityBonus[15] = {
+    S(-125, -42), S(-75, -36), S(-40, -31), S(33, -4), S(72, 38), S(76, 74), S(108, 150), S(121, 225),
+    S(123, 284), S(113, 310), S(77, 253), S(37, 152), S(20, 108), S(3, 47), S(-1, 58),
+};
+
+int queenMobilityBonus[28] = {
+    S(-27, 0), S(-8, 1), S(21, 4), S(18, 5), S(26, 8), S(44, 14), S(40, 20), S(34, 25),
+    S(40, 31), S(42, 38), S(44, 43), S(48, 53), S(43, 54), S(43, 62), S(42, 66), S(39, 68),
+    S(34, 67), S(27, 60), S(23, 57), S(17, 47), S(14, 43), S(12, 42), S(5, 14), S(4, 14),
+    S(1, 5), S(1, 5), S(0, 1), S(0, 1),
+};
+
 int PSQT[PIECE_CNT][SQ_CNT];
 
 int bishopPairBonus = S(20, 50);
@@ -135,70 +155,6 @@ void psqtEvalTrace(Pos *board) {
         T.pawnValue[BLACK]++;
         T.pawnPSQT[r][f][BLACK]++;
     }
-    pieces = board->pieces[KNIGHT] & board->sides[WHITE];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.knightValue[WHITE]++;
-        T.knightPSQT[r][f][WHITE]++;
-    }
-    pieces = board->pieces[KNIGHT] & board->sides[BLACK];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.knightValue[BLACK]++;
-        T.knightPSQT[r][f][BLACK]++;
-    }
-    pieces = board->pieces[BISHOP] & board->sides[WHITE];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.bishopValue[WHITE]++;
-        T.bishopPSQT[r][f][WHITE]++;
-    }
-    pieces = board->pieces[BISHOP] & board->sides[BLACK];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.bishopValue[BLACK]++;
-        T.bishopPSQT[r][f][BLACK]++;
-    }
-    pieces = board->pieces[ROOK] & board->sides[WHITE];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.rookValue[WHITE]++;
-        T.rookPSQT[r][f][WHITE]++;
-    }
-    pieces = board->pieces[ROOK] & board->sides[BLACK];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.rookValue[BLACK]++;
-        T.rookPSQT[r][f][BLACK]++;
-    }
-    pieces = board->pieces[QUEEN] & board->sides[WHITE];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.queenValue[WHITE]++;
-        T.queenPSQT[r][f][WHITE]++;
-    }
-    pieces = board->pieces[QUEEN] & board->sides[BLACK];
-    while (pieces) {
-        sq = poplsb(&pieces);
-        r = rank(sq);
-        f = relativeFile(sq);
-        T.queenValue[BLACK]++;
-        T.queenPSQT[r][f][BLACK]++;
-    }
     pieces = board->pieces[KING] & board->sides[WHITE];
     while (pieces) {
         sq = poplsb(&pieces);
@@ -224,6 +180,94 @@ int phase(Pos *board) {
     return (p * 256 + 12)/24;
 }
 
+int evaluateKnights(Pos *board, Bitboard knights, Bitboard moveableSquares, int turn) {
+    int r = 0;
+    int sq, mobility;
+
+    Bitboard attacks;
+
+    while(knights) {
+        sq = poplsb(&knights);
+
+        if (TRACE) T.knightValue[turn]++;
+        if (TRACE) T.knightPSQT[rank(sq)][relativeFile(sq)][turn]++;
+
+        attacks = getKnightAttacks(sq) & moveableSquares;
+        mobility = popcnt(attacks);
+
+        r += knightMobilityBonus[mobility];
+        if (TRACE) T.knightMobilityBonus[mobility][turn]--;
+    }
+
+    return r;
+}
+
+int evaluateBishops(Pos *board, Bitboard bishops, Bitboard moveableSquares, Bitboard occ, int turn) {
+    int r = 0;
+    int sq, mobility;
+
+    Bitboard attacks;
+
+    while(bishops) {
+        sq = poplsb(&bishops);
+
+        if (TRACE) T.bishopValue[turn]++;
+        if (TRACE) T.bishopPSQT[rank(sq)][relativeFile(sq)][turn]++;
+
+        attacks = getBishopAttacks(sq, occ) & moveableSquares;
+        mobility = popcnt(attacks);
+
+        r += bishopMobilityBonus[mobility];
+        if (TRACE) T.bishopMobilityBonus[mobility][turn]--;
+    }
+
+    return r;
+}
+
+int evaluateRooks(Pos *board, Bitboard rooks, Bitboard moveableSquares, Bitboard occ, int turn) {
+    int r = 0;
+    int sq, mobility;
+
+    Bitboard attacks;
+
+    while(rooks) {
+        sq = poplsb(&rooks);
+
+        if (TRACE) T.rookValue[turn]++;
+        if (TRACE) T.rookPSQT[rank(sq)][relativeFile(sq)][turn]++;
+
+        attacks = getRookAttacks(sq, occ) & moveableSquares;
+        mobility = popcnt(attacks);
+
+        r += rookMobilityBonus[mobility];
+        if (TRACE) T.rookMobilityBonus[mobility][turn]--;
+    }
+
+    return r;
+}
+
+int evaluateQueens(Pos *board, Bitboard queens, Bitboard moveableSquares, Bitboard occ, int turn) {
+    int r = 0;
+    int sq, mobility;
+
+    Bitboard attacks;
+
+    while(queens) {
+        sq = poplsb(&queens);
+
+        if (TRACE) T.queenValue[turn]++;
+        if (TRACE) T.queenPSQT[rank(sq)][relativeFile(sq)][turn]++;
+
+        attacks = getQueenAttacks(sq, occ) & moveableSquares;
+        mobility = popcnt(attacks);
+
+        r += queenMobilityBonus[mobility];
+        if (TRACE) T.queenMobilityBonus[mobility][turn]--;
+    }
+
+    return r;
+}
+
 // Evaluate a board position
 int evaluate(Pos *board) {
     
@@ -235,6 +279,28 @@ int evaluate(Pos *board) {
     psqtEvalTrace(board);
 #endif
 
+    Bitboard wKnights = board->pieces[KNIGHT] & board->sides[WHITE];
+    Bitboard bKnights = board->pieces[KNIGHT] & board->sides[BLACK];
+    Bitboard wBishops = board->pieces[BISHOP] & board->sides[WHITE];
+    Bitboard bBishops = board->pieces[BISHOP] & board->sides[BLACK];
+    Bitboard wRooks = board->pieces[ROOK] & board->sides[WHITE];
+    Bitboard bRooks = board->pieces[ROOK] & board->sides[BLACK];
+    Bitboard wQueens = board->pieces[QUEEN] & board->sides[WHITE];
+    Bitboard bQueens = board->pieces[QUEEN] & board->sides[BLACK];
+
+    Bitboard wMoveableSquares = ~(board->sides[WHITE] | soeaOne(board->pieces[PAWN]) | soweOne(board->pieces[PAWN]));
+    Bitboard bMoveableSquares = ~(board->sides[BLACK] | noeaOne(board->pieces[PAWN]) | noweOne(board->pieces[PAWN]));
+    Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
+
+    result += evaluateKnights(board, wKnights, wMoveableSquares, WHITE);
+    result -= evaluateKnights(board, bKnights, bMoveableSquares, BLACK);
+    result += evaluateBishops(board, wBishops, wMoveableSquares, occ, WHITE);
+    result -= evaluateBishops(board, bBishops, bMoveableSquares, occ, BLACK);
+    result += evaluateRooks(board, wRooks, wMoveableSquares, occ, WHITE);
+    result -= evaluateRooks(board, bRooks, bMoveableSquares, occ, BLACK);
+    result += evaluateQueens(board, wQueens, wMoveableSquares, occ, WHITE);
+    result -= evaluateQueens(board, bQueens, bMoveableSquares, occ, BLACK);
+    
     result += board->psqtScore;
 
     int p = phase(board);

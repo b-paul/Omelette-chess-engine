@@ -18,7 +18,6 @@ static inline int relativeFile(int sq) {
     return (sq & 0x4) ? (~sq & 0x3) : (sq & 0x3);
 }
 
-#ifdef TUNE
 struct EvalTrace {
     int pawnValue[CL_CNT];
     int knightValue[CL_CNT];
@@ -32,5 +31,15 @@ struct EvalTrace {
     int rookPSQT[RANK_CNT][FILE_CNT/2][CL_CNT];
     int queenPSQT[RANK_CNT][FILE_CNT/2][CL_CNT];
     int kingPSQT[RANK_CNT][FILE_CNT/2][CL_CNT];
+
+    int knightMobilityBonus[9][CL_CNT];
+    int bishopMobilityBonus[14][CL_CNT];
+    int rookMobilityBonus[15][CL_CNT];
+    int queenMobilityBonus[28][CL_CNT];
 };
+
+#ifdef TUNE
+#define TRACE (1)
+#else
+#define TRACE (0)
 #endif
