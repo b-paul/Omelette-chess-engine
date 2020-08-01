@@ -36,6 +36,8 @@ extern int bishopMobilityBonus[14];
 extern int rookMobilityBonus[15];
 extern int queenMobilityBonus[28];
 
+extern int bishopPairBonus;
+
 extern EvalTrace T, emptyTrace;
 
 TuneTuple *TupleStack;
@@ -294,7 +296,7 @@ void runTexelTuning(int threadCnt) {
     initEntries(entries, threads);
 
     const double K = computeK(entries, params);
-    //const double K = 1.2222;
+    //const double K = 0.832;
 
     printf("K = %g\n", K);
 

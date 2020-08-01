@@ -17,6 +17,9 @@ static const Bitboard notABFile = 0xFCFCFCFCFCFCFCFC;
 static const Bitboard notHFile = 0x7F7F7F7F7F7F7F7F;
 static const Bitboard notGHFile = 0x3F3F3F3F3F3F3F3F;
 
+static const Bitboard LightSquares = 0x55AA55AA55AA55AA;
+static const Bitboard DarkSquares = 0xAA55AA55AA55AA55;
+
 static const Bitboard Rank1 = 0xFF;
 static const Bitboard Rank2 = 0xFF00;
 static const Bitboard Rank4 = 0xFF000000;
