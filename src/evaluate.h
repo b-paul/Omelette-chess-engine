@@ -41,6 +41,8 @@ struct EvalTrace {
     int bishopMobilityBonus[14][CL_CNT];
     int rookMobilityBonus[15][CL_CNT];
     int queenMobilityBonus[28][CL_CNT];
+
+    int bishopPairBonus[CL_CNT];
 };
 
 #ifdef TUNE
