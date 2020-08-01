@@ -9,7 +9,7 @@
 #define LR_DROP_RATE (1.25)
 #define LEARNING_RATE (5.0)
 
-#define PARAM_CNT (197)
+#define PARAM_CNT (263) // 263
 
 #define STACKSIZE ((int)((double)ENTRY_CNT * PARAM_CNT / 32))
 
@@ -26,6 +26,10 @@
 #define TunerookPSQT (1)
 #define TunequeenPSQT (1)
 #define TunekingPSQT (1)
+#define TuneknightMobilityBonus (1)
+#define TunebishopMobilityBonus (1)
+#define TunerookMobilityBonus (1)
+#define TunequeenMobilityBonus (1)
 
 #include "types.h"
 
@@ -109,6 +113,10 @@ void runTexelTuning(int threadCnt);
     ENABLE_2(F, rookPSQT, RANK_CNT, FILE_CNT/2, "[RANK_CNT][FILE_CNT/2]"); \
     ENABLE_2(F, queenPSQT, RANK_CNT, FILE_CNT/2, "[RANK_CNT][FILE_CNT/2]"); \
     ENABLE_2(F, kingPSQT, RANK_CNT, FILE_CNT/2, "[RANK_CNT][FILE_CNT/2]"); \
+    ENABLE_1(F, knightMobilityBonus, 9, "[9]"); \
+    ENABLE_1(F, bishopMobilityBonus, 14, "[14]"); \
+    ENABLE_1(F, rookMobilityBonus, 15, "[15]"); \
+    ENABLE_1(F, queenMobilityBonus, 28, "[28]"); \
 } while(0)
 
 #endif

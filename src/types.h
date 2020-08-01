@@ -109,5 +109,5 @@ typedef struct Undo Undo;
 #ifdef TUNE
 typedef struct TuneEntry TuneEntry;
 typedef struct TuneTuple TuneTuple;
-typedef struct EvalTrace EvalTrace;
 #endif
+typedef struct EvalTrace EvalTrace;

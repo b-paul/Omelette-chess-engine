@@ -31,6 +31,11 @@ extern int rookPSQT[RANK_CNT][FILE_CNT/2];
 extern int queenPSQT[RANK_CNT][FILE_CNT/2];
 extern int kingPSQT[RANK_CNT][FILE_CNT/2];
 
+extern int knightMobilityBonus[9];
+extern int bishopMobilityBonus[14];
+extern int rookMobilityBonus[15];
+extern int queenMobilityBonus[28];
+
 extern EvalTrace T, emptyTrace;
 
 TuneTuple *TupleStack;
@@ -42,8 +47,10 @@ void print0(char *name, int params[PARAM_CNT][PHASE_CNT], int i, char *S) {
 
 void print1(char *name, int params[PARAM_CNT][PHASE_CNT], int i, int A, char *S) {
     printf("int %s%s = {\n    ", name, S);
-    for (int a = 0; a < A; a++, i++)
+    for (int a = 0; a < A; a++, i++) {
         printf("S(%d, %d), ", params[i][MG], params[i][EG]);
+        if (a % 8 == 7) printf("\n    ");
+    }
     printf("\n};\n\n");
 }
 
@@ -67,7 +74,7 @@ void printParams(Params params, Params cparams) {
 
     for (int j = 0; j < PARAM_CNT; j++)
         for (int k = MG; k <= EG; k++)
-            tparams[j][k] = -params[j][k] + cparams[j][k];
+            tparams[j][k] = params[j][k];
 
     int i = 0;
     EXECUTE_ON_PARAMS(PRINT_PARAMS);
@@ -88,7 +95,7 @@ double newEval(TuneEntry *entry, Params params) {
         mg += params[entry->tuples[i].index][MG] * entry->tuples[i].coeff;
         eg += params[entry->tuples[i].index][EG] * entry->tuples[i].coeff;
     }
-    return entry->eval - ((mg * (256 - entry->phase)) + (eg * entry->phase))/256.0;
+    return entry->eval + ((mg * (256 - entry->phase)) + (eg * entry->phase))/256.0;
 }
 
 double newSingleError(TuneEntry *entry, Params params, double K) {
@@ -119,16 +126,16 @@ double fullError(TuneEntry *entries, double K) {
     return r/(double)ENTRY_CNT;
 }
 
-double computeK(TuneEntry *entries) {
+double computeK(TuneEntry *entries, Params params) {
     double start = -10.0, end = 10.0, delta = 1.0;
-    double curr = start, err, best = fullError(entries, start);
+    double curr = start, err, best = newFullError(entries, params, start);
 
     for (int i = 0; i < K_PRECISION; i++) {
         curr = start - delta;
 
         while (curr < end) {
             curr += delta;
-            err = fullError(entries, curr);
+            err = newFullError(entries, params, curr);
             if (err <= best) {
                 best = err;
                 start = curr;
@@ -282,15 +289,16 @@ void runTexelTuning(int threadCnt) {
     TupleStack = calloc(STACKSIZE, sizeof(TuneTuple));
 
     initParams(cparams);
+    initParams(params);
 
     initEntries(entries, threads);
 
-    const double K = computeK(entries);
-    //const double K = 11.2222;
+    const double K = computeK(entries, params);
+    //const double K = 1.2222;
 
     printf("K = %g\n", K);
 
-    printf("Starting error %g\n", fullError(entries, K));
+    printf("Starting error %g\n", newFullError(entries, params, K));
 
     int iterations = 0;
 
