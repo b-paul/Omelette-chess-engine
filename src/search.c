@@ -111,10 +111,6 @@ int qsearch(Pos *board, int alpha, int beta, int height, Thread *thread, Princip
 }
 
 int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *thread, PrincipalVariation *pv) {
-    if (depth <= 0) {
-        return qsearch(board, alpha, beta, height, thread, pv);
-    }
-
     thread->nodes++;
     if (height > thread->seldepth) thread->seldepth = height;
 
@@ -122,6 +118,13 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     // check for draws
     if (isDrawn(board, height)) return 0;
+
+    int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
+    depth += inCheck;
+
+    if (depth <= 0) {
+        return qsearch(board, alpha, beta, height, thread, pv);
+    }
 
     PrincipalVariation lastPv;
     lastPv.length = 0;
@@ -141,9 +144,6 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int isQuiet;
     int R, didLMR;
-
-    int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
-    depth += inCheck;
 
     MovePicker mp;
 
