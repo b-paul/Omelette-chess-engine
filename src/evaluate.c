@@ -111,6 +111,8 @@ int queenMobilityBonus[28] = {
 
 int bishopPairBonus = S(23, 50);
 
+int TempoBonus = 20;
+
 int PSQT[PIECE_CNT][SQ_CNT];
 
 void initEval() {
@@ -313,7 +315,11 @@ int evaluate(Pos *board) {
     int p = phase(board);
     int mg = mgS(result);
     int eg = egS(result);
-    result = ((mg * (256-p)) + (eg * p))/256;
+    result = ((mg * (256-p)) + (eg * p))/256 + TempoBonus;
+
+#ifdef TUNE
+    result = TempoBonus;
+#endif
 
     return (board->turn ? -result : result);
 }
