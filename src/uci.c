@@ -436,7 +436,6 @@ void setOption(char *str, Thread **threads, tTable *tt, HistoryTable *hTable) {
     } else if (strstr(str, "setoption name Hash value") == str) {
         initTT(tt, atoi(str + 25));
     } else if (strstr(str, "setoption name SyzygyPath value") == str) {
-        printf("%s\n", str+32);
         tb_init(str + 32);
         TB_LARGEST ? printf("Syzygy Tablebase initialization success - largest found: %d\n", TB_LARGEST) :
                      printf("Sysygy Tablebase initialization failed");
@@ -651,18 +650,10 @@ void reportSearchInfo(Thread *threads) {
         tbHits += threads[i].tbHits;
     }
 
-    int curTime = getTime();
-    unsigned long long nps = nodes*1000/(curTime - threads[0].startTime+1);
-    
-    printf("info depth %d seldepth %d nodes %llu nps %llu tbhits %llu pv", threads[0].depth, threads[0].seldepth, nodes, nps, tbHits);
+    int curTime = timeSearched(&threads[0]) + 1;
+    unsigned long long nps = nodes*1000/(curTime);
 
-    for (int i = 0; i < threads[0].pv.length; i++) {
-        moveToStr(threads[0].pv.pv[i], threads[0].board, moveStr);
-
-        printf(" %s", moveStr);
-    } 
-
-    printf(" score ");
+    printf("info score ");
 
     if (abs(threads[0].score) < 997951) {
         printf("cp %d", threads[0].score);
@@ -670,6 +661,14 @@ void reportSearchInfo(Thread *threads) {
         int absVal = (999999-abs(threads[0].score))/2 + 1;
         printf("mate %d", threads[0].score > 0 ? absVal : -absVal);
     }
+    
+    printf(" depth %d seldepth %d nodes %llu nps %llu time %d tbhits %llu pv", threads[0].depth, threads[0].seldepth, nodes, nps, curTime, tbHits);
+
+    for (int i = 0; i < threads[0].pv.length; i++) {
+        moveToStr(threads[0].pv.pv[i], threads[0].board, moveStr);
+
+        printf(" %s", moveStr);
+    } 
 
     printf("\n");
     

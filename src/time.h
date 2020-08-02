@@ -23,7 +23,6 @@ static inline int getTime() {
 }
 
 static inline int timeSearched(Thread *thread) {
-    if (thread->infinite) return 1;
     int curTime = getTime();
     return curTime - thread->startTime;
 }
