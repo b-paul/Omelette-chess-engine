@@ -162,7 +162,9 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     if (!PVNode &&
         isReplaced &&
         hashEntry->depth >= depth) {
-        return ttEval;
+        if (ttEval >= beta ? hashEntry->type & LOWER :
+                             hashEntry->type & UPPER)
+            return ttEval;
     }
 
     // Syzygy tablebase probing
@@ -216,6 +218,8 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     }
 
     initMovePicker(&mp, board, &ttMove, height);
+
+    int oldAlpha = alpha;
 
     while ((move = selectNextMove(&mp, thread->hTable, board, 0)).value != NO_MOVE) {
 
@@ -288,7 +292,10 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         bestScore = inCheck ? -999999+height : 0;
     }
 
-    addEntry(hashEntry, board->hash, &bestMove, depth, bestScore, EXACT);
+    int flag = bestScore >= beta ? LOWER :
+               alpha != oldAlpha ? EXACT :
+                                   UPPER;
+    addEntry(hashEntry, board->hash, &bestMove, depth, bestScore, flag);
 
     return bestScore;
 

@@ -662,7 +662,7 @@ void reportSearchInfo(Thread *threads) {
         printf("mate %d", threads[0].score > 0 ? absVal : -absVal);
     }
     
-    printf(" depth %d seldepth %d nodes %llu nps %llu time %d tbhits %llu pv", threads[0].depth, threads[0].seldepth, nodes, nps, curTime, tbHits);
+    printf(" hashfull %d depth %d seldepth %d nodes %llu nps %llu time %d tbhits %llu pv", hashFull(threads->tt), threads[0].depth, threads[0].seldepth, nodes, nps, curTime, tbHits);
 
     for (int i = 0; i < threads[0].pv.length; i++) {
         moveToStr(threads[0].pv.pv[i], threads[0].board, moveStr);

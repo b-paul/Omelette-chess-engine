@@ -128,7 +128,6 @@ static inline int moveIsTactical(Move *move, Pos *board) {
 }
 
 static inline int moveIsPseudolegal(Move *move, Pos *board) {
-    return 0;
     if (move->value == NO_MOVE) return 0;
 
     int from = moveFrom(move);
