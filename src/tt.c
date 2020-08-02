@@ -46,7 +46,7 @@ void initTT(tTable *table, int size) {
 }
 
 void addEntry(ttEntry *entry, Key key, Move *move, int depth, int eval, int type) {
-    if (key != entry->key || depth >= entry->depth) {
+    if (key != entry->key || depth >= entry->depth || type == EXACT) {
         entry->key = key;
         entry->move = *move;
         entry->depth = depth;
@@ -68,4 +68,15 @@ ttEntry *probeTT(tTable *tt, Key key, int *isReplaced) {
     *isReplaced = entry->key == key;
 
     return entry;
+}
+
+int hashFull(tTable *tt) {
+    int count = 0;
+    int entries = 1000;
+
+    for (int i = 0; i < entries; i++)
+        if (tt->table[i].move.value != NO_MOVE)
+            count++;
+
+    return count;
 }
