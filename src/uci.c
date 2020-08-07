@@ -484,6 +484,8 @@ void bench(int argc, char **argv) {
         resetBoard(&board);
         parseFen(BenchFENs[i], &board);
 
+	info.startTime = getTime();
+
         initThreadSearch(threads, board, info);
         printf("Position %d: %s\n", i+1, BenchFENs[i]);
 
