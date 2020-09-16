@@ -132,6 +132,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int score,bestScore=-999999;
     int movecnt = 0, quietcnt = 0;
+    int allowQuiets = 1;
     Move move, bestMove;
 
     // PVS sets alpha to beta-1 on
@@ -221,7 +222,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int oldAlpha = alpha;
 
-    while ((move = selectNextMove(&mp, thread->hTable, board, 0)).value != NO_MOVE) {
+    while ((move = selectNextMove(&mp, thread->hTable, board, allowQuiets)).value != NO_MOVE) {
 
         isQuiet = !moveIsTactical(&move, board);
 
@@ -229,7 +230,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         if (!PVNode &&
             !inCheck &&
             quietcnt > 4 * depth * depth)
-            break;
+            allowQuiets = 0;
 
         if (!makeMove(board, &move)) {
             undoMove(board, &move, &mp.undo);
