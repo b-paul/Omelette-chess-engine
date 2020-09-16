@@ -225,7 +225,9 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
         isQuiet = !moveIsTactical(&move, board);
 
+        // LMP
         if (!PVNode &&
+            !inCheck &&
             quietcnt > 4 * depth * depth)
             break;
 
