@@ -228,8 +228,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
         // LMP
         if (!PVNode &&
-            !inCheck &&
-            quietcnt > 4 * depth * depth)
+            quietcnt > 2 * depth * depth)
             skipQuiets = 1;
 
         if (!makeMove(board, &move)) {
