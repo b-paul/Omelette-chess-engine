@@ -131,7 +131,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     pv->length = 0;
 
     int score,bestScore=-999999;
-    int movecnt = 0;
+    int movecnt = 0, quietcnt = 0;
     Move move, bestMove;
 
     // PVS sets alpha to beta-1 on
@@ -225,12 +225,17 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
         isQuiet = !moveIsTactical(&move, board);
 
+        if (!PVNode &&
+            quietcnt > 4 * depth * depth)
+            break;
+
         if (!makeMove(board, &move)) {
             undoMove(board, &move, &mp.undo);
             continue;
         }
 
         movecnt++;
+        quietcnt += isQuiet;
 
         if (RootNode && thread->index == 0 && timeSearched(thread) > 2000) {
             reportMoveInfo(move, *board, movecnt);
