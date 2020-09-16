@@ -131,7 +131,8 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     pv->length = 0;
 
     int score,bestScore=-999999;
-    int movecnt = 0;
+    int movecnt = 0, quietcnt = 0;
+    int skipQuiets = 0;
     Move move, bestMove;
 
     // PVS sets alpha to beta-1 on
@@ -221,9 +222,14 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int oldAlpha = alpha;
 
-    while ((move = selectNextMove(&mp, thread->hTable, board, 0)).value != NO_MOVE) {
+    while ((move = selectNextMove(&mp, thread->hTable, board, skipQuiets)).value != NO_MOVE) {
 
         isQuiet = !moveIsTactical(&move, board);
+
+        // LMP
+        if (!PVNode &&
+            quietcnt > 2 * depth * depth)
+            skipQuiets = 1;
 
         if (!makeMove(board, &move)) {
             undoMove(board, &move, &mp.undo);
@@ -231,6 +237,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         }
 
         movecnt++;
+        quietcnt += isQuiet;
 
         if (RootNode && thread->index == 0 && timeSearched(thread) > 2000) {
             reportMoveInfo(move, *board, movecnt);

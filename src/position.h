@@ -124,7 +124,7 @@ static inline int moveIsTactical(Move *move, Pos *board) {
     int to = moveTo(move);
     return board->pieceList[to] != NONE ||
            moveType(move) == ENPAS ||
-           promotePiece(move);
+           promotePiece(move) == QUEEN;
 }
 
 static inline int moveIsPseudolegal(Move *move, Pos *board) {
