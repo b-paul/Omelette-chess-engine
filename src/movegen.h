@@ -17,5 +17,5 @@ struct MoveList {
     int count;
 };
 
-void genMoves(MoveList* moves, Pos *board, int type);
+void genMoves(MoveList* moves, Pos *board, const int type);
 

@@ -21,7 +21,9 @@ void initBitBoards() {
     }
 }
 
-void printBitBoard(Bitboard bb) {
+// Functions used for debugging to get a 
+// visual representation of a bitboard
+void printBitBoard(const Bitboard bb) {
     // Loop through each square to print
     
     // Loop through rank backwards since we want the 8th rank
@@ -30,7 +32,7 @@ void printBitBoard(Bitboard bb) {
     for (int rank = RANK_8; rank >= RANK_1; rank--) {
         for (int file = FILE_A; file < FILE_CNT; file++) {
             // Print X if there is a bit at sq, else print -
-            printf("%s", (testBit(bb, sq(file, rank)) ? "X" : "-"));
+            printf("%s", (testBit(bb, sq(rank, file)) ? "X" : "-"));
         }
         
         // Line gap between ranks

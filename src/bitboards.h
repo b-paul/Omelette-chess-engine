@@ -10,7 +10,7 @@
 static Bitboard arrRectangular[SQ_CNT][SQ_CNT];
 
 void initBitBoards();
-void printBitBoard(Bitboard bb);
+void printBitBoard(const Bitboard bb);
 
 static const Bitboard notAFile = 0xFEFEFEFEFEFEFEFE;
 static const Bitboard notABFile = 0xFCFCFCFCFCFCFCFC;
@@ -29,28 +29,28 @@ static const Bitboard Rank8 = 0xFF00000000000000;
 static const Bitboard FileA = 0x0101010101010101;
 
 // Used to find pawn and king attacks
-static inline Bitboard noeaOne(Bitboard bb) {return (bb << 7) & notHFile;}
-static inline Bitboard nortOne(Bitboard bb) {return (bb << 8);}
-static inline Bitboard noweOne(Bitboard bb) {return (bb << 9) & notAFile;}
-static inline Bitboard westOne(Bitboard bb) {return (bb << 1) & notAFile;}
-static inline Bitboard eastOne(Bitboard bb) {return (bb >> 1) & notHFile;}
-static inline Bitboard soeaOne(Bitboard bb) {return (bb >> 9) & notHFile;}
-static inline Bitboard soutOne(Bitboard bb) {return (bb >> 8);}
-static inline Bitboard soweOne(Bitboard bb) {return (bb >> 7) & notAFile;}
+static inline Bitboard noeaOne(const Bitboard bb) {return (bb << 7) & notHFile;}
+static inline Bitboard nortOne(const Bitboard bb) {return (bb << 8);}
+static inline Bitboard noweOne(const Bitboard bb) {return (bb << 9) & notAFile;}
+static inline Bitboard westOne(const Bitboard bb) {return (bb << 1) & notAFile;}
+static inline Bitboard eastOne(const Bitboard bb) {return (bb >> 1) & notHFile;}
+static inline Bitboard soeaOne(const Bitboard bb) {return (bb >> 9) & notHFile;}
+static inline Bitboard soutOne(const Bitboard bb) {return (bb >> 8);}
+static inline Bitboard soweOne(const Bitboard bb) {return (bb >> 7) & notAFile;}
 
 // Used to find knight attacks
-static inline Bitboard nonoea(Bitboard bb) {return (bb << 15) & notHFile;}
-static inline Bitboard nonowe(Bitboard bb) {return (bb << 17) & notAFile;}
-static inline Bitboard noeaea(Bitboard bb) {return (bb << 6) & notGHFile;}
-static inline Bitboard nowewe(Bitboard bb) {return (bb << 10) & notABFile;}
-static inline Bitboard sosoea(Bitboard bb) {return (bb >> 17) & notHFile;}
-static inline Bitboard sosowe(Bitboard bb) {return (bb >> 15) & notAFile;}
-static inline Bitboard soeaea(Bitboard bb) {return (bb >> 10) & notGHFile;}
-static inline Bitboard sowewe(Bitboard bb) {return (bb >> 6) & notABFile;}
+static inline Bitboard nonoea(const Bitboard bb) {return (bb << 15) & notHFile;}
+static inline Bitboard nonowe(const Bitboard bb) {return (bb << 17) & notAFile;}
+static inline Bitboard noeaea(const Bitboard bb) {return (bb << 6) & notGHFile;}
+static inline Bitboard nowewe(const Bitboard bb) {return (bb << 10) & notABFile;}
+static inline Bitboard sosoea(const Bitboard bb) {return (bb >> 17) & notHFile;}
+static inline Bitboard sosowe(const Bitboard bb) {return (bb >> 15) & notAFile;}
+static inline Bitboard soeaea(const Bitboard bb) {return (bb >> 10) & notGHFile;}
+static inline Bitboard sowewe(const Bitboard bb) {return (bb >> 6) & notABFile;}
 
 
 
-static inline Bitboard shift(Bitboard bb, int dir) {
+static inline Bitboard shift(Bitboard bb, const int dir) {
 
     // Bitshift does not work with negative numbers
     // These numbers must be converted to positive numbers
@@ -75,7 +75,7 @@ static inline Bitboard shift(Bitboard bb, int dir) {
 
 
 
-static inline int popcnt(Bitboard bb) {
+static inline int popcnt(const Bitboard bb) {
 
     // Built in function finds
     // amounts of bits in a bitboard
@@ -86,7 +86,7 @@ static inline int popcnt(Bitboard bb) {
 
 
 
-static inline bool validSquare(int sq) {
+static inline bool validSquare(const int sq) {
 
     // If the square is in the range of 0-63
 
@@ -96,7 +96,7 @@ static inline bool validSquare(int sq) {
 
 
 
-static inline bool testBit(Bitboard bb, int sq) {
+static inline bool testBit(const Bitboard bb, const int sq) {
 
     // Check the square is valid
 
@@ -111,7 +111,7 @@ static inline bool testBit(Bitboard bb, int sq) {
 
 
 
-static inline void setBit(Bitboard *bb, int sq) {
+static inline void setBit(Bitboard *bb, const int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -127,7 +127,7 @@ static inline void setBit(Bitboard *bb, int sq) {
 
 
 
-static inline void popBit(Bitboard *bb, int sq) {
+static inline void popBit(Bitboard *bb, const int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -143,8 +143,8 @@ static inline void popBit(Bitboard *bb, int sq) {
 
 
 
-static inline int getlsb(Bitboard bb) {
-    // lsb stands for least significant bit
+// Get the least significant bit in a bitboard
+static inline int getlsb(const Bitboard bb) {
 
     // Checks to see if the bitboard
     // contains anything
@@ -157,6 +157,7 @@ static inline int getlsb(Bitboard bb) {
 
 
 
+// Pop and return the least significant bit in a bitboard
 static inline int poplsb(Bitboard *bb) {
 
     // Checks to see if the bitboard
@@ -176,10 +177,11 @@ static inline int poplsb(Bitboard *bb) {
 
 
 
+// Returns a square based on the file and rank
 // A square can be anywhere from 0 to 63, which is 6 bits
 // The file is always the first 3 bits
 // The rank is always the last 3 bits
-static inline int sq(int f, int r) {
+static inline int sq(const int r, const int f) {
 
     // Check file and rank are valid
     assert((f >= 0) && (f < 8));
@@ -191,7 +193,8 @@ static inline int sq(int f, int r) {
 
 
 
-static inline int file(int sq) {
+// Return the file of a square
+static inline int file(const int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -205,7 +208,8 @@ static inline int file(int sq) {
 
 
 
-static inline int rank(int sq) {
+// Returns the rank of a square
+static inline int rank(const int sq) {
 
     // Check the square is valid
     assert(validSquare(sq));
@@ -220,21 +224,19 @@ static inline int rank(int sq) {
 
 
 // Returns the square opposite to sq along the file axis
-static inline int flipSq(int square) {
+static inline int flipSq(const int square) {
 
     // Check the square is valid
     assert(validSquare(square));
 
-    int r = rank(square);
-    int f = 7 - file(square);
-    return sq(f, r);
+    return sq(rank(square), 7 - file(square));
 
 }
 
 
 
 // Find the distance between two squares
-static inline int distance(int a, int b) {
+static inline int distance(const int a, const int b) {
     
     // Check the squares are valid
     assert(validSquare(a));
@@ -247,7 +249,7 @@ static inline int distance(int a, int b) {
 
 // Returns a Bitboard that contains just
 // the specified rank
-static inline Bitboard bbRank(int rank) {
+static inline Bitboard bbRank(const int rank) {
 
     // Check the rank is valid
     assert(rank < 8);
@@ -263,7 +265,7 @@ static inline Bitboard bbRank(int rank) {
 
 // Returns a Bitboard that contains just
 // the specified file
-static inline Bitboard bbFile(int file) {
+static inline Bitboard bbFile(const int file) {
 
     // Check the file is valid
     assert(file < 8);
@@ -277,17 +279,17 @@ static inline Bitboard bbFile(int file) {
 
 // Returns true if squares a b and c line up
 // c is the bitboard of its square instead of an integer
-static inline int isBetween(int a, int b, Bitboard c) {
+static inline int isBetween(const int a, const int b, const Bitboard c) {
     return arrRectangular[a][b] & c;
 }
 
 // Returns a bitboard of the squares between square
 // a and b
-static inline int betweenBB(int a, int b) {
+static inline int betweenBB(const int a, const int b) {
     return arrRectangular[a][b];
 }
 
 // Returns true if the BB contains more than 1 bit
-static inline int moreOneBit(Bitboard bb) {
+static inline int multipleBits(const Bitboard bb) {
     return bb & (bb - 1);
 }

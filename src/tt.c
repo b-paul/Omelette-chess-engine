@@ -19,12 +19,12 @@ void clearTT(tTable *table) {
 }
 
 // Size is in MB
-void initTT(tTable *table, int size) {
+void initTT(tTable *table, const int size) {
 
     table->curAge = 0;
 
     // Convert to bytes
-    long sizeBytes = size * 1048576;
+    const long sizeBytes = size * 1048576;
 
     table->entryCount = sizeBytes/sizeof(ttEntry);
 
@@ -45,7 +45,7 @@ void initTT(tTable *table, int size) {
 
 }
 
-void addEntry(ttEntry *entry, Key key, Move *move, int depth, int eval, int type) {
+void addEntry(ttEntry *entry, Key key, Move *move, const int depth, const int eval, const int type) {
     if (key != entry->key || depth >= entry->depth || type == EXACT) {
         entry->key = key;
         entry->move = *move;

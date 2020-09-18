@@ -11,8 +11,8 @@ void initZobrist();
 void initPosition();
 void resetBoard(Pos* board);
 void printBoard(Pos board);
-Bitboard sliderBlockers(Pos board, int square);
-int isDrawn(Pos *board, int height);
+Bitboard sliderBlockers(Pos board, const int square);
+int isDrawn(Pos *board, const int height);
 int makeMove(Pos* board, Move *move);
 void undoMove(Pos* board, Move *move, Undo *undo);
 Undo makeNullMove(Pos *board);
@@ -58,7 +58,7 @@ struct Undo {
 
 // Is check
 // side is the side to check
-static inline Bitboard squareAttackers(Pos *board, int sq, int side) {
+static inline Bitboard squareAttackers(Pos *board, const int sq, const int side) {
     Bitboard them = board->sides[!side];
     Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
 
@@ -98,7 +98,7 @@ static inline int moveTo(Move *move) {
     return (move->value >> 6) & 63;
 }
 
-static inline int pieceType(int piece) {
+static inline int pieceType(const int piece) {
     // first 4 bits
     return (piece & 7);// - 1;
 }
@@ -210,9 +210,9 @@ static inline int moveIsPseudolegal(Move *move, Pos *board) {
         return !moveType(move) && legalAttack;
     }
 }
-static inline void placePSQT(Pos *board, int piece, int sq) {
+static inline void placePSQT(Pos *board, const int piece, const int sq) {
     board->psqtScore += PSQT[piece][sq];
 }
-static inline void removePSQT(Pos *board, int piece, int sq) {
+static inline void removePSQT(Pos *board, const int piece, const int sq) {
     board->psqtScore -= PSQT[piece][sq];
 }

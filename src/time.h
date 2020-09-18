@@ -7,11 +7,11 @@
 #include <sys/time.h>
 #include <stddef.h>
 
-extern int initTimeManagement(Pos *board, int time, int movesLeft);
-extern void updateTimeManagement(Thread *thread);
+int initTimeManagement(Pos *board, const int time, const int movesLeft);
+void updateTimeManagement(Thread *thread);
 
 static inline int legalMoveCount(Pos *board) {
-    return perft(board, 1, 0);
+    return perft(board, 1);
 }
 
 static inline int getTime() {

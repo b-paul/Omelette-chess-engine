@@ -3,7 +3,7 @@
 #include "threads.h"
 #include "types.h"
 
-int initTimeManagement(Pos *board, int time, int movesLeft) {
+int initTimeManagement(Pos *board, const int time, const int movesLeft) {
     int moveCnt = MIN(legalMoveCount(board), 5);
 
     // If there is only 1 legal move, or no moves

@@ -6,9 +6,11 @@
 #include <assert.h>
 #include <stdio.h>
 
-// Directions for finding bishop and rook attacks
+// Direction representing bishops and rooks
 int bishopDir[4] = {9, 7, -7, -9};
 int rookDir[4] = {8, 1, -1, -8};
+
+// Initialise all attack tables
 
 void initPawnAttacks() {
     for (int i = 0; i < SQ_CNT; i++) {
@@ -45,7 +47,8 @@ void initKingAttacks() {
     }
 }
 
-Bitboard sliderAttack(int sq, Bitboard occ, int Direction[4]) {
+// Returns a bitboard representing a sliding pieces attack including occupancy blocking
+Bitboard sliderAttack(const int sq, const Bitboard occ, const int Direction[4]) {
     Bitboard result = 0ULL;
     for (int i = 0; i < 4; i++) {
         for (int square = sq + Direction[i]; validSquare(square) &&
@@ -92,8 +95,11 @@ void initAttacks() {
 
 
     for (int i = 0; i < SQ_CNT; i++) {
+        // Initialize attacks of sliding pieces without
+        // occupancy for lookup
         bPseudoAttacks[i] = sliderAttack(i, 0, bishopDir);
         rPseudoAttacks[i] = sliderAttack(i, 0, rookDir);
+
         initSlider(i, bishopMagics, bishopMagic[i], bishopDir);
         initSlider(i, rookMagics, rookMagic[i], rookDir);
     }

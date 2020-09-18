@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-Thread *initThreads(int threadCount, tTable *tt, HistoryTable *hTable) {
+Thread *initThreads(const int threadCount, tTable *tt, HistoryTable *hTable) {
     Thread *threads = malloc(sizeof(Thread) * threadCount);
 
     for (int i = 0; i < threadCount; i++) {

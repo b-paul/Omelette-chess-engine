@@ -15,11 +15,15 @@ int evaluate(Pos *board);
 
 extern int PSQT[PIECE_CNT][SQ_CNT];
 
-static inline int relativeFile(int sq) {
+// Return the file of a square 
+// relative to one half of the board
+static inline int relativeFile(const int sq) {
     return (sq & 0x4) ? (~sq & 0x3) : (sq & 0x3);
 }
 
-static inline int relativeRank(int sq, int turn) {
+// Return the rank of a square
+// relative to the side to move
+static inline int relativeRank(const int sq, const int turn) {
     return turn == WHITE ? rank(sq) : 7-rank(sq);
 }
 

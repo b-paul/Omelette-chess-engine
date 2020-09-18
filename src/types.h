@@ -2,6 +2,7 @@
 
 typedef unsigned long long Bitboard;
 typedef unsigned long long Key;
+typedef unsigned long long U64;
 
 #define MAX(a, b) (((a) > (b)) ? a : b)
 #define MIN(a, b) (((a) < (b)) ? a : b)

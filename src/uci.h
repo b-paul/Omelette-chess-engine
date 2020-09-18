@@ -12,4 +12,4 @@ void parseFen(const char *fen, Pos* board);
 void bench(int argc, char **argv);
 void uciLoop();
 void reportSearchInfo(Thread *threads);
-void reportMoveInfo(Move move, Pos board, int index);
+void reportMoveInfo(Move move, Pos board, const int index);
