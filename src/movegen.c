@@ -10,7 +10,7 @@
 
 
 
-void makePromotion(MoveList* moves, int to, int from, int type) {
+void makePromotion(MoveList* moves, const int to, const int from, const int type) {
 
     if (type != QUIET) {
 
@@ -34,22 +34,22 @@ void makePromotion(MoveList* moves, int to, int from, int type) {
 
 
 
-void genPawnMoves(MoveList* moves, Pos board, int type) {
-    Bitboard occ = board.sides[WHITE] | board.sides[BLACK];
+void genPawnMoves(MoveList* moves, Pos *board, const int type) {
+    Bitboard occ = board->sides[WHITE] | board->sides[BLACK];
     Bitboard empty = ~occ;
 
     int sq;
-    int pushDir = (board.turn) ? -8 : 8;
-    int capDir1 = (board.turn) ? -7 : 7;
-    int capDir2 = (board.turn) ? -9 : 9;
+    int pushDir = (board->turn) ? -8 : 8;
+    int capDir1 = (board->turn) ? -7 : 7;
+    int capDir2 = (board->turn) ? -9 : 9;
 
-    Bitboard rank4th = (board.turn ? Rank5 : Rank4);
-    Bitboard rank5th = (board.turn ? Rank4 : Rank5);
-    Bitboard rank7th = (board.turn ? Rank2 : Rank7);
+    Bitboard rank4th = (board->turn ? Rank5 : Rank4);
+    Bitboard rank5th = (board->turn ? Rank4 : Rank5);
+    Bitboard rank7th = (board->turn ? Rank2 : Rank7);
 
-    Bitboard ourPawns = board.pieces[PAWN] & board.sides[board.turn];
+    Bitboard ourPawns = board->pieces[PAWN] & board->sides[board->turn];
 
-    Bitboard them = board.sides[!board.turn];
+    Bitboard them = board->sides[!board->turn];
 
     Bitboard promote = ourPawns & rank7th;
     Bitboard noPromote = ourPawns & ~rank7th;
@@ -110,18 +110,18 @@ void genPawnMoves(MoveList* moves, Pos board, int type) {
             moves->count++;
         }
 
-        if (board.enPas != NO_SQ) {
-            p1 = noPromote & getPawnAttacks(board.enPas, !board.turn) & rank5th;
+        if (board->enPas != NO_SQ) {
+            p1 = noPromote & getPawnAttacks(board->enPas, !board->turn) & rank5th;
             while (p1) {
-                moves->moves[moves->count].value = makeMove(board.enPas, poplsb(&p1), 0, ENPAS);
+                moves->moves[moves->count].value = makeMove(board->enPas, poplsb(&p1), 0, ENPAS);
                 moves->count++;
             }
         }
     }
 }
 
-void genMoves(MoveList* moves, Pos *board, int type) {
-    genPawnMoves(moves, *board, type);
+void genMoves(MoveList* moves, Pos *board, const int type) {
+    genPawnMoves(moves, board, type);
 
     Bitboard ourKnights = board->pieces[KNIGHT] & board->sides[board->turn];
     Bitboard ourBishops = board->pieces[BISHOP] & board->sides[board->turn];
@@ -134,8 +134,6 @@ void genMoves(MoveList* moves, Pos *board, int type) {
     Bitboard targets = (type == ALLMOVES) ? ~board->sides[board->turn] :
                                          (type == NOISY)        ? board->sides[!board->turn] :
                                                                                     ~occ;
-
-    // return;
 
     int from;
 

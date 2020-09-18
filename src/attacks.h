@@ -40,8 +40,9 @@ Magic rookMagics[SQ_CNT];
 
 void initAttacks();
 
-
-static inline int sliderIndex(Bitboard occ, Magic magic) {
+// Used to lookup the index of the attack table
+// entry of a sliding piece
+static inline int sliderIndex(const Bitboard occ, const Magic magic) {
     #ifdef USE_PEXT
         // Built in to some CPUs
         // Does the same thing as magic bitboards
@@ -54,34 +55,34 @@ static inline int sliderIndex(Bitboard occ, Magic magic) {
     #endif
 }
 
-
-static inline Bitboard getPawnAttacks(int sq, int side) {
+// Helpers for getting the attacks of each piece
+static inline Bitboard getPawnAttacks(const int sq, const int side) {
     assert(validSquare(sq));
     assert((side >= 0) && (side < 2));
     return pawnAttacks[sq][side];
 }
 
-static inline Bitboard getKnightAttacks(int sq) {
+static inline Bitboard getKnightAttacks(const int sq) {
     assert(validSquare(sq));
     return knightAttacks[sq];
 }
 
-static inline Bitboard getKingAttacks(int sq) {
+static inline Bitboard getKingAttacks(const int sq) {
     assert(validSquare(sq));
     return kingAttacks[sq];
 }
 
-static inline Bitboard getBishopAttacks(int sq, Bitboard occ) {
+static inline Bitboard getBishopAttacks(const int sq, const Bitboard occ) {
     assert(validSquare(sq));
     return bishopMagics[sq].attacks[sliderIndex(occ, bishopMagics[sq])];
 }
 
-static inline Bitboard getRookAttacks(int sq, Bitboard occ) {
+static inline Bitboard getRookAttacks(const int sq, const Bitboard occ) {
     assert(validSquare(sq));
     return rookMagics[sq].attacks[sliderIndex(occ, rookMagics[sq])];
 }
 
-static inline Bitboard getQueenAttacks(int sq, Bitboard occ) {
+static inline Bitboard getQueenAttacks(const int sq, const Bitboard occ) {
     assert(validSquare(sq));
     return getBishopAttacks(sq, occ) | getRookAttacks(sq, occ);
 }

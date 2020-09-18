@@ -17,7 +17,7 @@ volatile int STOP_SEARCH = 0;
 
 int futilityMargin = 230;
 
-Bitboard perft(Pos *board, int depth, int isRoot) {
+U64 perft(Pos *board, int depth) {
     if (depth == 0) return 1;
 
     MoveList moves;
@@ -37,7 +37,7 @@ Bitboard perft(Pos *board, int depth, int isRoot) {
             undoMove(board, &moves.moves[i], &mp.undo);
             continue;
         }
-        nodes += perft(board, depth - 1, 0);
+        nodes += perft(board, depth - 1);
         undoMove(board, &moves.moves[i], &mp.undo);
     }
     return nodes;
@@ -196,7 +196,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
  
     if (!PVNode &&
         depth < 6 &&
-        eval - (futilityMargin * (depth))>= beta)
+        eval - (futilityMargin * depth) >= beta)
         return eval;
 
     // Null move pruning

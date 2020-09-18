@@ -118,9 +118,10 @@ int PSQT[PIECE_CNT][SQ_CNT];
 void initEval() {
     // Add the material bonus to
     // each psqt square
+    int r, f;
     for (int i = 0; i < SQ_CNT; i++) {
-        int r = rank(i);
-        int f = relativeFile(i);
+        r = rank(i);
+        f = relativeFile(i);
 
         PSQT[wP][i] = pawnValue + pawnPSQT[r][f];
         PSQT[wN][i] = knightValue + knightPSQT[r][f];
@@ -182,7 +183,7 @@ int phase(Pos *board) {
     return (p * 256 + 12)/24;
 }
 
-int evaluateKnights(Pos *board, Bitboard knights, Bitboard moveableSquares, int turn) {
+int evaluateKnights(Pos *board, Bitboard knights, const Bitboard moveableSquares, const int turn) {
     int r = 0;
     int sq, mobility;
 
@@ -204,7 +205,7 @@ int evaluateKnights(Pos *board, Bitboard knights, Bitboard moveableSquares, int 
     return r;
 }
 
-int evaluateBishops(Pos *board, Bitboard bishops, Bitboard moveableSquares, Bitboard occ, int turn) {
+int evaluateBishops(Pos *board, Bitboard bishops, const Bitboard moveableSquares, const Bitboard occ, const int turn) {
     int r = 0;
     int sq, mobility;
 
@@ -233,7 +234,7 @@ int evaluateBishops(Pos *board, Bitboard bishops, Bitboard moveableSquares, Bitb
     return r;
 }
 
-int evaluateRooks(Pos *board, Bitboard rooks, Bitboard moveableSquares, Bitboard occ, int turn) {
+int evaluateRooks(Pos *board, Bitboard rooks, const Bitboard moveableSquares, const Bitboard occ, const int turn) {
     int r = 0;
     int sq, mobility;
 
@@ -255,7 +256,7 @@ int evaluateRooks(Pos *board, Bitboard rooks, Bitboard moveableSquares, Bitboard
     return r;
 }
 
-int evaluateQueens(Pos *board, Bitboard queens, Bitboard moveableSquares, Bitboard occ, int turn) {
+int evaluateQueens(Pos *board, Bitboard queens, const Bitboard moveableSquares, const Bitboard occ, const int turn) {
     int r = 0;
     int sq, mobility;
 

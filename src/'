@@ -11,7 +11,7 @@ Key zobristEnPas[8];
 Key zobristCastle[15];
 Key zobristTurn;
 
-Key randBB() {
+Bitboard randBB() {
     static Key seed = 23409839408ULL;
 
     seed ^= seed >> 35;
@@ -115,7 +115,7 @@ void printBoard(Pos board) {
 
 
 
-Bitboard sliderBlockers(Pos board, const int square) {
+Bitboard sliderBlockers(Pos board, int square) {
         Bitboard result = 0ull;
 
         Bitboard sliders = ((bPseudoAttacks[square] & (board.pieces[BISHOP] | board.pieces[QUEEN])) |
@@ -137,7 +137,7 @@ int isFiftyMoveDraw(Pos *board) {
     // Should check for not mate as well
 }
 
-int isRepetitionDraw(Pos *board, const int height) {
+int isRepetitionDraw(Pos *board, int height) {
     int repeats = 0; 
 
     for (int i = board->plyLength-2; i >= 0; i-=2) {
@@ -159,7 +159,7 @@ int isMaterialDraw(Pos *board) {
            (!board->pieces[BISHOP] && popcnt(board->pieces[KNIGHT]) <= 2));
 }
 
-int isDrawn(Pos *board, const int height) {
+int isDrawn(Pos *board, int height) {
     return isFiftyMoveDraw(board) ||
            isRepetitionDraw(board, height) ||
            isMaterialDraw(board);

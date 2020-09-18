@@ -207,7 +207,7 @@ void parseFen(const char* fen, Pos* board) {
     // En pas
 
     if (*fen != '-') {
-        board->enPas = sq(fen[0] - 'a', fen[1] - '1');
+        board->enPas = sq(fen[1] - '1', fen[0] - 'a');
         board->hash ^= zobristEnPas[file(board->enPas)];
         fen++;
     }
@@ -225,7 +225,7 @@ void parseFen(const char* fen, Pos* board) {
 }
 
 
-void intToSquare(int square, char *string) {
+void intToSquare(const int square, char *string) {
     *string++ = file(square) + 'a';
     *string++ = rank(square) + '1';
 }
@@ -556,7 +556,7 @@ void uciLoop() {
             char* ptr = str;
             ptr+=6;
 
-            Bitboard a = perft(&board, atoi(ptr), 1);
+            Bitboard a = perft(&board, atoi(ptr));
 
             printf("%llu\n", a);
 
@@ -585,7 +585,7 @@ void uciLoop() {
                     continue;
                 }
 
-                Bitboard a = perft(&board, atoi(ptr), 1);
+                Bitboard a = perft(&board, atoi(ptr));
 
                 undoMove(&board, &moves.moves[i], &mp.undo);
 
@@ -644,7 +644,7 @@ void uciLoop() {
 
 
 void reportSearchInfo(Thread *threads) {
-    unsigned long long nodes = 0, tbHits = 0;
+    U64 nodes = 0, tbHits = 0;
     char moveStr[6];
 
     for (int i = 0; i < threads->threadCount; i++) {
@@ -653,7 +653,7 @@ void reportSearchInfo(Thread *threads) {
     }
 
     int curTime = timeSearched(&threads[0]) + 1;
-    unsigned long long nps = nodes*1000/(curTime);
+    U64 nps = nodes*1000/(curTime);
 
     printf("info score ");
 
@@ -676,7 +676,7 @@ void reportSearchInfo(Thread *threads) {
     
 }
 
-void reportMoveInfo(Move move, Pos board, int index) {
+void reportMoveInfo(Move move, Pos board, const int index) {
     char moveStr[6];
     moveToStr(move, board, moveStr);
     printf("info currmove %s currmovenumber %d\n", moveStr, index);

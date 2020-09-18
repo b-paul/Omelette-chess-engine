@@ -22,7 +22,7 @@ struct Search {
     int startTime;
 };
 
-Bitboard perft(Pos *board, int depth, int isRoot);
+U64 perft(Pos *board, int depth);
 void initSearch();
 Move getBestMove(Pos board, Thread *threads);
 

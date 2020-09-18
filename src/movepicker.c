@@ -19,8 +19,8 @@ void initHistoryTable(HistoryTable *table) {
     }
 }
 
-void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, int depth, int height) {
-    int bonus = SQUARED(depth);
+void updateHistoryScores(HistoryTable *table, Pos *board, Move *move, const int depth, const int height) {
+    const int bonus = SQUARED(depth);
     table->historyScores[board->turn][moveFrom(move)][moveTo(move)] += bonus;
 
     if (table->killers[height][0].value != move->value) {
@@ -33,11 +33,11 @@ int MVVLVAValues[PIECE_TYPE_CNT] = {                                            
     100, 200, 300, 400, 500, 600
 };
 
-void popMove(MoveList *moves, int index) {
+void popMove(MoveList *moves, const int index) {
     moves->moves[index] = moves->moves[--moves->count];
 }
 
-void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, int height) {
+void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, const int height) {
 
     // Init the undo
     mp->undo.lastEnPas = board->enPas;
@@ -94,7 +94,7 @@ void evalNoisy(MoveList *moves, Pos *board) {
     }
 }
 
-void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos *board, int height) {
+void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos *board, const int height) {
     int from, to;
     for (int i = 0; i < moves->count; i++) {
         // If the move is a killer move
@@ -110,7 +110,7 @@ void evalQuiet(MoveList *moves, HistoryTable *hTable, Pos *board, int height) {
     }
 }
 
-Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, int onlyNoisy) {
+Move selectNextMove(MovePicker *mp, HistoryTable *hTable, Pos *board, const int onlyNoisy) {
     int best;
     Move bestMove;
     switch (mp->stage) {
