@@ -10,6 +10,7 @@ typedef unsigned long long U64;
 #define SQUARED(a) (a)*(a)
 
 #define WDL_WIN 31256
+#define MATE_VAL 999999
 
 enum Square {
     A1, B1, C1, D1, E1, F1, G1, H1,

@@ -126,6 +126,23 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         return qsearch(board, alpha, beta, height, thread, pv);
     }
 
+    // Mate distance pruning
+    int matingScore = MATE_VAL - height;
+
+    if (matingScore < beta) {
+        beta = matingScore;
+        if (alpha >= matingScore)
+            return matingScore;
+    }
+
+    matingScore = -MATE_VAL + height;
+
+    if (matingScore > alpha) {
+        alpha = matingScore;
+        if (beta <= matingScore)
+            return matingScore;
+    }
+
     PrincipalVariation lastPv;
     lastPv.length = 0;
     pv->length = 0;
