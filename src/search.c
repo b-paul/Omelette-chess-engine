@@ -16,6 +16,7 @@
 volatile int STOP_SEARCH = 0;
 
 int futilityMargin = 230;
+int razoringMargin = 300;
 
 U64 perft(Pos *board, int depth) {
     if (depth == 0) return 1;
@@ -122,9 +123,8 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     int inCheck = squareAttackers(board, getlsb(board->pieces[KING] & board->sides[board->turn]), board->turn) ? 1 : 0;
     depth += inCheck;
 
-    if (depth <= 0) {
+    if (depth <= 0)
         return qsearch(board, alpha, beta, height, thread, pv);
-    }
 
     // Mate distance pruning
     int matingScore = MATE_VAL - height;
@@ -159,6 +159,12 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     int RootNode = height == 0;
 
     int eval = evaluate(board);
+
+    // Razoring
+    if (!PVNode &&
+        depth < 3 &&
+        eval + razoringMargin < beta)
+        return qsearch(board, alpha, beta, height, thread, pv);
 
     int isQuiet;
     int R, didLMR;
