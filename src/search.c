@@ -263,11 +263,10 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
         R = 0;
 
         // LMR
-        if (depth > 2 &&
+        if (isQuiet &&
+            depth > 2 &&
             movecnt > 2) {
             R = reductionTable[MIN(depth, 63)][MIN(movecnt, 63)];
-
-            R += isQuiet;
 
             int RDepth = CLAMP(depth-R-1, 1, depth-1);
 
