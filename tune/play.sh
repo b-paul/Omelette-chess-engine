@@ -9,11 +9,11 @@
     -repeat \
     -recover \
     -tournament gauntlet \
-    -rounds 64 \
-    -concurrency 2 \
+    -rounds 20 \
+    -concurrency 10 \
     -ratinginterval 50 \
     -draw movenumber=50 movecount=5 score=20 \
     -openings file=2moves_v2.pgn format=pgn order=random \
-    -engine cmd=./omelette dir=../src/ name=omelette1 tc=40/1+0.05 \
-    -engine cmd=./omelette dir=../src/ name=omelette2 tc=40/1+0.05 \
+    -engine cmd=./omelette dir=../src/ name=omelette tc=0/300+5.00 \
+    -engine cmd=./raven dir=. name=raven tc=0/300+5.00 \
     -each timemargin=60000 option.Hash=512 proto=uci

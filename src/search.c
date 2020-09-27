@@ -267,7 +267,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             movecnt > 2) {
             R = reductionTable[MIN(depth, 63)][MIN(movecnt, 63)];
 
-            R += isQuiet;
+            R -= !isQuiet;
 
             int RDepth = CLAMP(depth-R-1, 1, depth-1);
 
