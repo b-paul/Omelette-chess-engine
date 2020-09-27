@@ -7,7 +7,7 @@
 #include <sys/time.h>
 #include <stddef.h>
 
-int initTimeManagement(Pos *board, const int time, const int movesLeft);
+int initTimeManagement(Pos *board, const int time, const int inc, const int movesLeft);
 void updateTimeManagement(Thread *thread);
 
 static inline int legalMoveCount(Pos *board) {

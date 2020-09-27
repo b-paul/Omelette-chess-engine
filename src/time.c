@@ -3,7 +3,7 @@
 #include "threads.h"
 #include "types.h"
 
-int initTimeManagement(Pos *board, const int time, const int movesLeft) {
+int initTimeManagement(Pos *board, const int time, const int inc, const int movesLeft) {
     int moveCnt = MIN(legalMoveCount(board), 5);
 
     // If there is only 1 legal move, or no moves
@@ -12,7 +12,12 @@ int initTimeManagement(Pos *board, const int time, const int movesLeft) {
         return 0;
     }
 
-    return (time*moveCnt*moveCnt)/(movesLeft*25);
+    int allocatedTime = ((time+inc)*moveCnt*moveCnt)/(movesLeft*25);
+
+    if (allocatedTime > time)
+        allocatedTime = (time*moveCnt*moveCnt)/(movesLeft*25);
+
+    return allocatedTime;
 }
 
 void updateTimeManagement(Thread *thread) {
