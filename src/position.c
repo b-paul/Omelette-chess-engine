@@ -174,6 +174,8 @@ int makeMove(Pos* board, Move *move) {
 
     board->history[board->plyLength++] = board->hash;
 
+    board->didNullMove = FALSE;
+
     // First and second 6 bits
     int from = moveFrom(move);
     int to = moveTo(move);
@@ -312,6 +314,7 @@ void undoMove(Pos* board, Move *move, Undo *undo) {
     board->castlePerms = undo->lastCastle;
     board->fiftyMoveRule = undo->lastFiftyRule;
     board->psqtScore = undo->lastPSQT;
+    board->didNullMove = undo->lastDidNullMove;
 
     board->plyLength--;
 
@@ -385,6 +388,7 @@ Undo makeNullMove(Pos *board) {
 
     board->fiftyMoveRule++;
     board->history[board->plyLength++] = board->hash;
+    board->didNullMove = TRUE;
 
     board->turn = !board->turn;
     board->hash ^= zobristTurn;
@@ -401,6 +405,7 @@ void undoNullMove(Pos *board, Undo undo) {
     board->enPas = undo.lastEnPas;
     board->hash = undo.lastHash;
     board->fiftyMoveRule = undo.lastFiftyRule;
+    board->didNullMove = FALSE;
 
     board->plyLength--;
 

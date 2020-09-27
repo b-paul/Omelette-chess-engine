@@ -45,6 +45,7 @@ void initMovePicker(MovePicker *mp, Pos *board, Move *ttMove, const int height) 
     mp->undo.lastCastle = board->castlePerms;
     mp->undo.lastFiftyRule = board->fiftyMoveRule;
     mp->undo.lastPSQT = board->psqtScore;
+    mp->undo.lastDidNullMove = board->didNullMove;
 
     mp->stage = TABLES_STAGE;
 

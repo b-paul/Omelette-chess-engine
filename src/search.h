@@ -42,3 +42,7 @@ static inline unsigned probeSyzygyWDL(Pos *board) {
             board->pieces[KNIGHT], board->pieces[PAWN],
             0, 0, 0, board->turn);
 }
+
+static inline int wasNullMove(Pos *board) {
+    return board->didNullMove;
+}

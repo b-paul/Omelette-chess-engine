@@ -316,7 +316,7 @@ int evaluate(Pos *board) {
     int p = phase(board);
     int mg = mgS(result);
     int eg = egS(result);
-    result = ((mg * (256-p)) + (eg * p))/256 + TempoBonus;
+    result = (((mg * (256-p)) + (eg * p))/256) + TempoBonus;
 
 #ifdef TUNE
     result = TempoBonus;

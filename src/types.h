@@ -95,6 +95,11 @@ enum Phase {
     PHASE_CNT
 };
 
+enum Bool {
+    FALSE,
+    TRUE
+};
+
 typedef struct goArgs goArgs;
 typedef struct HistoryTable HistoryTable;
 typedef struct Magic Magic;

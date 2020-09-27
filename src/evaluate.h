@@ -13,6 +13,8 @@ void initEval();
 int phase(Pos *board);
 int evaluate(Pos *board);
 
+extern int TempoBonus;
+
 extern int PSQT[PIECE_CNT][SQ_CNT];
 
 // Return the file of a square 

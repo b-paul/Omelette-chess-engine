@@ -158,7 +158,17 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
 
     int RootNode = height == 0;
 
-    int eval = evaluate(board);
+    int eval = board->evalHist[height] =
+        // The eval is not needed when in
+        // check since all pruning considerations
+        // are ignored in check
+        inCheck ? 0 :
+        // If the last move was a null move,
+        // the eval is just the negative
+        // value of the last positions eval
+        // For some reason tempo broken rn
+        wasNullMove(board) ? -board->evalHist[height-1] :
+        evaluate(board);
 
     int isQuiet;
     int R, didLMR;
@@ -212,6 +222,7 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
     // Reverse futility pruning
  
     if (!PVNode &&
+        !inCheck &&
         depth < 6 &&
         eval - (futilityMargin * depth) >= beta)
         return eval;

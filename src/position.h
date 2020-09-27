@@ -6,6 +6,11 @@
 #include "movegen.h"
 #include "types.h"
 
+extern Key zobristPieces[SQ_CNT][PIECE_CNT];
+extern Key zobristEnPas[8];
+extern Key zobristCastle[15];
+extern Key zobristTurn;
+
 Bitboard randBB();
 void initZobrist();
 void initPosition();
@@ -46,6 +51,10 @@ struct Pos {
     Key hash;
 
     int psqtScore;
+
+    int didNullMove;
+
+    int evalHist[256];
 };
 
 struct Undo {
@@ -54,6 +63,7 @@ struct Undo {
     int lastCastle;
     int lastFiftyRule;
     int lastPSQT;
+    int lastDidNullMove;
 };
 
 // Is check
