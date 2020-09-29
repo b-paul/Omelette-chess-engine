@@ -268,6 +268,8 @@ int alphaBeta(Pos *board, int alpha, int beta, int depth, int height, Thread *th
             R = reductionTable[MIN(depth, 63)][MIN(movecnt, 63)];
 
             R += isQuiet;
+            
+            R -= PVNode;
 
             int RDepth = CLAMP(depth-R-1, 1, depth-1);
 
